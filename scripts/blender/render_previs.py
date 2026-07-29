@@ -1,7 +1,6 @@
 import argparse
 import json
 import math
-import os
 import sys
 from pathlib import Path
 
@@ -148,15 +147,44 @@ def main():
     make_linear()
     blend_file = output / "previs.blend"
     bpy.ops.wm.save_as_mainfile(filepath=str(blend_file))
+    timeline = spec["timeline"]
+    expected_frame_count = timeline["frameEnd"] - timeline["frameStart"] + 1
     if options.render:
         bpy.ops.render.render(animation=True)
+    rendered_files = sorted((output / "frames").glob("frame_*.png")) if options.render else []
+    expected_names = {
+        f"frame_{frame:04d}.png"
+        for frame in range(timeline["frameStart"], timeline["frameEnd"] + 1)
+    }
+    valid_expected_files = [
+        file for file in rendered_files
+        if file.name in expected_names and file.stat().st_size > 0
+    ]
+    unexpected_files = [file for file in rendered_files if file.name not in expected_names]
+    empty_files = [file for file in rendered_files if file.name in expected_names and file.stat().st_size == 0]
+    rendered_frame_count = len(valid_expected_files)
+    render_completed = (
+        options.render
+        and rendered_frame_count == expected_frame_count
+        and not unexpected_files
+        and not empty_files
+    )
     report = {
         "version": 1,
         "shotId": spec["id"],
         "blenderVersion": bpy.app.version_string,
-        "frames": spec["timeline"]["frameEnd"],
-        "fps": spec["timeline"]["fps"],
-        "renderedFrames": options.render,
+        "status": "frames-complete" if render_completed else "scene-only-complete" if not options.render else "frames-incomplete",
+        "frameStart": timeline["frameStart"],
+        "frameEnd": timeline["frameEnd"],
+        "expectedFrameCount": expected_frame_count,
+        "renderRequested": options.render,
+        "renderCompleted": render_completed,
+        "renderedFrameCount": rendered_frame_count,
+        "unexpectedFrameCount": len(unexpected_files),
+        "emptyFrameCount": len(empty_files),
+        "fps": timeline["fps"],
+        "resolution": spec["resolution"],
+        "sceneSaved": blend_file.exists() and blend_file.stat().st_size > 0,
         "encoded": False,
         "files": ["previs.blend"] + (["frames/"] if options.render else []),
     }
@@ -164,6 +192,10 @@ def main():
         json.dump(report, handle, indent=2)
         handle.write("\n")
     print(json.dumps(report))
+    if options.render and not render_completed:
+        raise RuntimeError(
+            f"Blender produced {rendered_frame_count} of {expected_frame_count} expected frames"
+        )
 
 
 if __name__ == "__main__":

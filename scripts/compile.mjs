@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 import path from "node:path";
 import { parseArgs } from "./lib/args.mjs";
-import { relativePortable, writeJson, writeText } from "./lib/io.mjs";
+import { acquireArtifactLock, writeCompiledArtifacts } from "./lib/artifacts.mjs";
 import { compileShotSpec, loadShotSpec } from "./lib/spec.mjs";
 
-const { options, positionals } = parseArgs(process.argv.slice(2), new Set(["check"]));
-if (positionals.length !== 1) {
-  console.error("Usage: node scripts/compile.mjs <shot.json> [--out-dir build/<id>] [--check]");
-  process.exit(1);
-}
-
 try {
+  const { options, positionals } = parseArgs(
+    process.argv.slice(2),
+    new Set(["check"]),
+    new Set(["check", "out-dir"]),
+  );
+  if (positionals.length !== 1) throw new Error("Usage: node scripts/compile.mjs <shot.json> [--out-dir build/<id>] [--check]");
   const { file, spec } = loadShotSpec(positionals[0]);
   const result = compileShotSpec(spec);
   if (options.check) {
@@ -18,20 +18,15 @@ try {
     result.warnings.forEach((warning) => console.warn(`WARN ${warning}`));
   } else {
     const output = path.resolve(options["out-dir"] || path.join("build", spec.id));
-    writeJson(path.join(output, "compiled.json"), result.compiled);
-    writeJson(path.join(output, "seedance.request.json"), result.request);
-    writeText(path.join(output, "prompt.txt"), `${result.prompt}\n`);
-    writeJson(path.join(output, "manifest.json"), {
-      version: 1,
-      id: spec.id,
-      source: relativePortable(process.cwd(), file),
-      files: ["compiled.json", "prompt.txt", "seedance.request.json"],
-      hashes: result.hashes,
-      warnings: result.warnings,
-    });
+    const releaseLock = acquireArtifactLock(output, spec.id);
+    try {
+      writeCompiledArtifacts({ output, sourceFile: file, result });
+    } finally {
+      releaseLock();
+    }
     console.log(`Compiled ${spec.id} to ${output}`);
   }
 } catch (error) {
   console.error(error.message);
-  process.exit(1);
+  process.exitCode = 1;
 }

@@ -2,10 +2,17 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { parseArgs } from "./lib/args.mjs";
 import { loadShotSpec, validateShotSpec } from "./lib/spec.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const requested = process.argv.slice(2).filter((arg) => !arg.startsWith("--"));
+let requested;
+try {
+  ({ positionals: requested } = parseArgs(process.argv.slice(2), new Set(), new Set()));
+} catch (error) {
+  console.error(error.message);
+  process.exit(1);
+}
 const files = requested.length ? requested.map((file) => path.resolve(file)) : discoverExamples();
 let failed = false;
 for (const file of files) {

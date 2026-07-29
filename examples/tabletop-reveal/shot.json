@@ -45,6 +45,32 @@
       "dimensions": [0.16, 0.16, 4.8],
       "color": [0.72, 0.42, 0.12],
       "keyframes": [{ "time": 0, "location": [-2.0, 1.9, 0.12], "rotation": [0, 90, 28] }]
+    },
+    {
+      "id": "second-hand",
+      "primitive": "cube",
+      "role": "thin red watch second hand that remains still until 2.5 seconds, then advances smoothly clockwise across the dial",
+      "dimensions": [0.07, 1.35, 0.04],
+      "color": [0.82, 0.08, 0.045],
+      "keyframes": [
+        { "time": 0, "location": [0.3, 0, 0.68], "rotation": [0, 0, 0] },
+        { "time": 2.5, "location": [0.3, 0, 0.68], "rotation": [0, 0, 0] },
+        { "time": 3.5, "location": [0.3, 0, 0.68], "rotation": [0, 0, -6] },
+        { "time": 4.5, "location": [0.3, 0, 0.68], "rotation": [0, 0, -12] },
+        { "time": 5, "location": [0.3, 0, 0.68], "rotation": [0, 0, -15] }
+      ]
+    },
+    {
+      "id": "light-sweep-marker",
+      "primitive": "cube",
+      "role": "timing proxy for a narrow sunrise specular highlight that travels once from left to right across the watch face",
+      "dimensions": [0.12, 4.2, 0.03],
+      "color": [1.0, 0.72, 0.22],
+      "keyframes": [
+        { "time": 0, "location": [-3.2, 0, 0.75], "rotation": [0, 0, 0] },
+        { "time": 2.5, "location": [0.3, 0, 0.75], "rotation": [0, 0, 0] },
+        { "time": 5, "location": [3.5, 0, 0.75], "rotation": [0, 0, 0] }
+      ]
     }
   ],
   "camera": {
@@ -67,14 +93,16 @@
       "the watch design, dial markings, crown position, and olive strap remain unchanged",
       "the watch stays centered on the same plinth",
       "the camera move remains slow and continuous",
-      "the second hand starts once near the midpoint"
+      "the second hand remains still through 2.5 seconds and then moves clockwise for the rest of the shot",
+      "one narrow sunrise highlight crosses the dial from left to right and reaches its center at 2.5 seconds"
     ],
     "avoid": [
       "floating product",
       "warped dial typography",
       "extra crowns or hands",
       "aggressive lens flare",
-      "retaining primitive cylinder appearance"
+      "retaining primitive cylinder appearance",
+      "retaining the rectangular light-sweep timing marker"
     ],
     "seed": 97531
   }
