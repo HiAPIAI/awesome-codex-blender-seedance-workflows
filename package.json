@@ -1,0 +1,30 @@
+{
+  "name": "awesome-codex-blender-seedance-workflows",
+  "version": "0.1.0",
+  "description": "Executable Codex-to-Blender previs workflows for Seedance video generation through HiAPI.",
+  "type": "module",
+  "private": false,
+  "scripts": {
+    "doctor": "node scripts/doctor.mjs",
+    "validate": "node scripts/validate.mjs",
+    "compile": "node scripts/compile.mjs",
+    "render": "node scripts/render.mjs",
+    "generate": "node scripts/submit.mjs",
+    "test:unit": "node --test tests/*.test.mjs",
+    "test": "node --test tests/*.test.mjs && node scripts/validate.mjs && node scripts/compile.mjs examples/warehouse-pursuit/shot.json --check"
+  },
+  "keywords": [
+    "codex",
+    "blender",
+    "seedance",
+    "seedance-2-0",
+    "hiapi",
+    "previs",
+    "ai-filmmaking",
+    "reference-video"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  }
+}

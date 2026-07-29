@@ -1,0 +1,37 @@
+name: Submit a workflow
+description: Propose an original, reproducible Codex + Blender + Seedance shot workflow.
+title: "workflow: "
+labels: [workflow]
+body:
+  - type: input
+    id: control_problem
+    attributes:
+      label: Control problem
+      description: What camera, blocking, action, or timing failure does this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: shot
+    attributes:
+      label: Shot description
+      description: Describe one continuous 4-15 second shot, including subjects, action, camera, and reveal.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Validation evidence
+      description: Include commands run and what you inspected in the previs. Do not attach secrets or signed URLs.
+    validations:
+      required: true
+  - type: checkboxes
+    id: rights
+    attributes:
+      label: Rights and safety
+      options:
+        - label: The shot spec is original or all referenced material is authorized and attributed.
+          required: true
+        - label: No generated media, API key, signed URL, private likeness, or local path is included.
+          required: true
+        - label: I understand API success does not replace full human video review.
+          required: true

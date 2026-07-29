@@ -1,0 +1,20 @@
+# Awesome Codex + Blender + Seedance Workflows
+
+> A zero-dependency, executable repository for compiling structured Codex shot plans into Blender gray-box previs videos and reviewed Seedance 2.0 requests through HiAPI.
+
+## Start here
+
+- Read `/AGENTS.md` before editing a shot.
+- Copy one `/examples/*/shot.json` file into a new example directory.
+- Run `npm test`, then `npm run render -- <shot.json> --out-dir <output>`.
+- Review the complete previs before running the HiAPI dry run.
+- Never submit a paid task without the exact current preflight token and user approval.
+
+## Important files
+
+- `/schemas/shot-spec.schema.json`: public shot contract.
+- `/scripts/lib/spec.mjs`: validation and compilation.
+- `/scripts/blender/render_previs.py`: constrained Blender renderer.
+- `/scripts/submit.mjs`: dry-run, submit, poll, resume, and download lifecycle.
+- `/docs/PLAN.md`: current and future scope.
+- `/docs/research.md`: related projects and non-copying boundary.
