@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/HiAPIAI/awesome-codex-blender-seedance-workflows/schemas/shot-spec.schema.json",
+  "title": "Codex Blender Seedance Shot Spec",
+  "type": "object",
+  "required": ["version", "id", "title", "intent", "duration", "fps", "resolution", "world", "objects", "camera", "seedance"],
+  "properties": {
+    "version": { "const": 1 },
+    "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "title": { "type": "string", "minLength": 3 },
+    "intent": { "type": "string", "minLength": 20 },
+    "duration": { "type": "integer", "minimum": 4, "maximum": 15 },
+    "fps": { "type": "integer", "minimum": 12, "maximum": 60 },
+    "resolution": {
+      "type": "object",
+      "required": ["width", "height"],
+      "properties": {
+        "width": { "type": "integer", "minimum": 256, "maximum": 4096 },
+        "height": { "type": "integer", "minimum": 256, "maximum": 4096 }
+      },
+      "additionalProperties": false
+    },
+    "world": {
+      "type": "object",
+      "required": ["background", "groundColor", "groundSize", "lighting"],
+      "properties": {
+        "background": { "$ref": "#/$defs/color" },
+        "groundColor": { "$ref": "#/$defs/color" },
+        "groundSize": { "$ref": "#/$defs/vec2" },
+        "lighting": { "type": "string", "minLength": 5 }
+      },
+      "additionalProperties": false
+    },
+    "objects": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "required": ["id", "primitive", "role", "dimensions", "color", "keyframes"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+          "primitive": { "enum": ["cube", "sphere", "cylinder", "cone"] },
+          "role": { "type": "string", "minLength": 5 },
+          "dimensions": { "$ref": "#/$defs/vec3Positive" },
+          "color": { "$ref": "#/$defs/color" },
+          "keyframes": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["time", "location"],
+              "properties": {
+                "time": { "type": "number", "minimum": 0 },
+                "location": { "$ref": "#/$defs/vec3" },
+                "rotation": { "$ref": "#/$defs/vec3" }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "camera": {
+      "type": "object",
+      "required": ["lensMm", "sensorWidthMm", "rig", "keyframes"],
+      "properties": {
+        "lensMm": { "type": "number", "minimum": 12, "maximum": 300 },
+        "sensorWidthMm": { "type": "number", "minimum": 8, "maximum": 70 },
+        "rig": { "type": "string", "minLength": 3 },
+        "keyframes": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "required": ["time", "location", "target"],
+            "properties": {
+              "time": { "type": "number", "minimum": 0 },
+              "location": { "$ref": "#/$defs/vec3" },
+              "target": { "$ref": "#/$defs/vec3" },
+              "lensMm": { "type": "number", "minimum": 12, "maximum": 300 }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "seedance": {
+      "type": "object",
+      "required": ["model", "resolution", "aspectRatio", "generateAudio", "style", "continuity", "avoid"],
+      "properties": {
+        "model": { "const": "seedance-2.0" },
+        "resolution": { "enum": ["480p", "720p", "1080p", "4k"] },
+        "aspectRatio": { "enum": ["16:9", "9:16", "1:1", "4:3", "3:4", "21:9", "adaptive"] },
+        "generateAudio": { "type": "boolean" },
+        "style": { "type": "string", "minLength": 20 },
+        "continuity": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 5 } },
+        "avoid": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 3 } },
+        "seed": { "type": "integer", "minimum": 0, "maximum": 2147483647 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "vec2": { "type": "array", "prefixItems": [{ "type": "number" }, { "type": "number" }], "minItems": 2, "maxItems": 2 },
+    "vec3": { "type": "array", "prefixItems": [{ "type": "number" }, { "type": "number" }, { "type": "number" }], "minItems": 3, "maxItems": 3 },
+    "vec3Positive": { "type": "array", "prefixItems": [{ "type": "number", "exclusiveMinimum": 0 }, { "type": "number", "exclusiveMinimum": 0 }, { "type": "number", "exclusiveMinimum": 0 }], "minItems": 3, "maxItems": 3 },
+    "color": { "type": "array", "prefixItems": [{ "type": "number", "minimum": 0, "maximum": 1 }, { "type": "number", "minimum": 0, "maximum": 1 }, { "type": "number", "minimum": 0, "maximum": 1 }], "minItems": 3, "maxItems": 3 }
+  },
+  "additionalProperties": false
+}
