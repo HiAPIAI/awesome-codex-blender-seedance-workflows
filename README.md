@@ -1,5 +1,7 @@
 # Awesome Codex + Blender + Seedance Workflows
 
+[![Codex, Blender, and Seedance previs workflow cover](assets/cover.webp)](https://www.hiapi.ai/)
+
 [简体中文](README.zh-CN.md) | [Setup](docs/setup.md) | [Architecture](docs/architecture.md) | [Research](docs/research.md) | [Roadmap](docs/PLAN.md)
 
 Executable, reviewable workflows for turning a Codex-authored shot plan into a Blender gray-box previs and then into a Seedance 2.0 video through [HiAPI](https://www.hiapi.ai/).

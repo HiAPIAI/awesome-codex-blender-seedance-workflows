@@ -1,5 +1,7 @@
 # Awesome Codex + Blender + Seedance 工作流
 
+[![Codex、Blender 与 Seedance 预演工作流封面](assets/cover.webp)](https://www.hiapi.ai/)
+
 [English](README.md) | [环境准备](docs/setup.md) | [架构](docs/architecture.md) | [调研记录](docs/research.md) | [开发计划](docs/PLAN.md)
 
 这是一个可执行、可审查的 AI 电影预演仓库：Codex 编写结构化镜头，Blender 批量渲染灰盒预演，再通过 [HiAPI](https://www.hiapi.ai/) 把预演作为 Seedance 2.0 的动作、空间、节奏与镜头参考。
