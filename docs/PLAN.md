@@ -12,18 +12,23 @@ Provide the smallest trustworthy bridge between Codex, Blender previs, and Seeda
 - [x] Blender 4.5+/5.x batch renderer with strict Python failure propagation.
 - [x] PNG-frame to H.264 encoding through FFmpeg.
 - [x] HiAPI `/v1/tasks` submit, poll, resume, and output download lifecycle.
-- [x] Dry-run-first paid gate bound to the request and local video SHA-256.
+- [x] Endpoint-bound dry-run gate, server idempotency key, recovery journal, and validated atomic download.
 - [x] Node 20/22 CI, unit tests, bilingual docs, contribution and security guidance.
 
-## P1 - stronger review artifacts
+## P1 - stronger review artifacts (completed)
 
-- Generate first/middle/last stills and a contact sheet.
-- Add automatic frame non-blank and camera-cut detection.
-- Add optional top-down blocking diagrams.
-- Add a compact human QC report beside each render.
+- [x] Generate first/middle/last stills and a contact sheet.
+- [x] Flag likely blank frames and abrupt luma changes for human inspection.
+- [x] Add optional top-down blocking diagrams through `--blocking-svg`.
+- [x] Write a verified review report and human QC checklist beside each render.
+- [x] Claim and lock shot-specific output directories before any destructive cleanup.
+- [x] Preserve the previous render through isolated staging and recoverable promotion.
+- [x] Bind paid submission to the reviewed request/video hashes and completed human-review flag.
+- [x] Bind recovery to the exact API credential and bound the idempotency window, API responses, media uploads, and all-address DNS-pinned MP4 downloads.
 
 ## P2 - authoring adapters
 
+- Add a cached Blender 4.5 LTS/current 5.x headless render matrix when CI download/runtime budget is available; local release verification remains required until then.
 - Import a constrained subset of Blockout metadata into `shot.json`.
 - Add a Blender MCP handoff prompt that exports only schema-approved state.
 - Add GLB/FBX proxy import after a license and sandbox boundary review.

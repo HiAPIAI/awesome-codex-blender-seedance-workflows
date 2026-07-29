@@ -73,8 +73,14 @@
     "rig": "low handheld chase with controlled lateral sway and no cuts",
     "keyframes": [
       { "time": 0, "location": [-10.3, -5.2, 2.35], "target": [-7.2, -0.4, 1.05], "lensMm": 26 },
-      { "time": 3, "location": [-4.0, -5.0, 2.45], "target": [-1.7, 0.25, 1.05], "lensMm": 24 },
-      { "time": 6, "location": [2.3, -4.6, 2.55], "target": [5.1, 1.25, 1.05], "lensMm": 26 }
+      { "time": 0.75, "location": [-8.9, -4.82, 2.22], "target": [-5.7, -0.15, 1.0], "lensMm": 25 },
+      { "time": 1.5, "location": [-7.35, -5.18, 2.48], "target": [-4.15, -0.05, 1.12], "lensMm": 24 },
+      { "time": 2.25, "location": [-5.8, -4.78, 2.29], "target": [-2.85, 0.15, 1.0], "lensMm": 25 },
+      { "time": 3, "location": [-4.0, -5.08, 2.46], "target": [-1.7, 0.25, 1.05], "lensMm": 24 },
+      { "time": 3.75, "location": [-2.45, -4.62, 2.3], "target": [-0.2, 0.55, 1.0], "lensMm": 25 },
+      { "time": 4.5, "location": [-0.9, -4.97, 2.51], "target": [1.7, 0.72, 1.1], "lensMm": 24 },
+      { "time": 5.25, "location": [0.7, -4.45, 2.33], "target": [3.4, 1.0, 1.0], "lensMm": 25 },
+      { "time": 6, "location": [2.3, -4.78, 2.55], "target": [5.1, 1.25, 1.05], "lensMm": 26 }
     ]
   },
   "seedance": {
@@ -87,7 +93,8 @@
       "the courier remains ahead of the guard for the full take",
       "the silver case stays in the courier's right hand",
       "the forklift crosses once from background to foreground",
-      "screen direction remains left-to-right"
+      "screen direction remains left-to-right",
+      "the handheld camera sway alternates gently without losing either runner"
     ],
     "avoid": [
       "cuts or angle changes",
