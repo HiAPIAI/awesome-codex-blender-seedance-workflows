@@ -26,8 +26,9 @@ flowchart LR
 | [Warehouse Pursuit](examples/warehouse-pursuit/shot.json) | Chase spacing, crossing obstacle, visible handheld sway | 6s | Low handheld follow |
 | [Rooftop Signal Reveal](examples/rooftop-reveal/shot.json) | Performance-to-scale reveal across three skyline depths | 8s | Medium follow to crane wide |
 | [Precision Watch Reveal](examples/tabletop-reveal/shot.json) | Product geometry, second-hand start, and highlight timing | 5s | Macro slider arc |
+| [Desert RV Laboratory](examples/desert-rv-laboratory/shot.json) | Warm/cold interior contrast, glass and metal response, subtle performance | 8s | 35mm slow dolly-in |
 
-The engine supports white-listed cubes, spheres, cylinders, cones, object transforms, camera transforms, focal-length changes, and linear keyframes. It deliberately does not execute arbitrary model-authored Python.
+The engine supports white-listed cubes, spheres, cylinders, cones, object transforms, camera transforms, focal-length changes, and linear keyframes. Optional cinematic specs can select bounded Cycles samples, material presets, bevels, smooth shading, depth of field, volumetric density, and up to 16 validated lights. It deliberately does not execute arbitrary model-authored Python.
 
 ## Quick start
 

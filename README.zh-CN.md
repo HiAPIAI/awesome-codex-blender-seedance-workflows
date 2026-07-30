@@ -15,6 +15,9 @@
 | [仓库追逐](examples/warehouse-pursuit/shot.json) | 追逐间距、横穿障碍与可见手持漂移 | 6 秒 | 低机位手持跟拍 |
 | [楼顶信号揭示](examples/rooftop-reveal/shot.json) | 人物表演过渡到三层城市纵深揭示 | 8 秒 | 中景跟随到升降大全景 |
 | [腕表精密揭示](examples/tabletop-reveal/shot.json) | 产品几何、秒针启动与移动高光时序 | 5 秒 | 微距滑轨弧线 |
+| [沙漠 RV 实验室](examples/desert-rv-laboratory/shot.json) | 冷暖室内对比、玻璃金属响应与克制表演 | 8 秒 | 35mm 慢速推轨 |
+
+引擎支持白名单立方体、球体、圆柱体、圆锥体、物体与摄影机变换、焦距变化和线性关键帧。可选电影级规范还可以启用有上限的 Cycles 采样、材质预设、倒角、平滑着色、景深、体积密度和最多 16 盏经过验证的灯光；渲染器仍然不会执行任意模型生成的 Python。
 
 ## 快速开始
 
