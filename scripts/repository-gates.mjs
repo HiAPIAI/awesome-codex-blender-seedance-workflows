@@ -45,7 +45,7 @@ const forbidden = files.filter((file) => (
   || (/(^|\/)\.env(?:\..+)?$/.test(file) && file !== ".env.example")
   || /preflight-.+\.pending\.json$/.test(file)
   || /(?:^|\/)(?:\.codex-previs-(?:staging|backup)-[^/]+)(?:\/|$)/.test(file)
-  || /(?:^|\/)(?:\.codex-previs-output(?:\.json|\.lock)|compiled\.json|manifest\.json|prompt\.txt|seedance\.request\.json|render-report\.json|review-report\.json|review-checklist\.md|blocking-top\.svg)$/.test(file)
+  || /(?:^|\/)(?:\.codex-previs-output(?:\.json|\.lock)|compiled\.json|manifest\.json|prompt\.txt|seedance\.request\.json|render-report\.json|review-report\.json|review-checklist\.md|handoff-manifest\.json|seedance-handoff\.md|blocking-top\.svg)$/.test(file)
   || /\.(?:submitted|result|download)\.json$/.test(file)
   || /(?:^|\/)(?:frames\/frame_\d+|review\/(?:first-frame|middle-frame|last-frame|contact-sheet))\.png$/.test(file)
 ));
