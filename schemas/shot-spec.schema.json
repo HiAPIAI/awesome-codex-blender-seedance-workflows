@@ -1,13 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/HiAPIAI/awesome-codex-blender-seedance-workflows/main/schemas/shot-spec.schema.json",
-  "$comment": "scripts/lib/spec.mjs additionally enforces cross-field render-budget, frame-mapping, and aspect-ratio rules that JSON Schema cannot express.",
+  "$comment": "scripts/lib/spec.mjs additionally enforces cross-field render-budget, frame-mapping, aspect-ratio, version-gating, parent-hierarchy (cycles, self/invalid references), compound/template/instance reference, and contact-point rules that JSON Schema cannot express.",
   "title": "Codex Blender Seedance Shot Spec",
   "type": "object",
   "required": ["version", "id", "title", "intent", "duration", "fps", "resolution", "world", "objects", "camera", "seedance"],
   "properties": {
     "$schema": { "type": "string", "minLength": 1, "maxLength": 500 },
-    "version": { "const": 1 },
+    "version": { "enum": [1, 2] },
     "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
     "title": { "type": "string", "minLength": 3, "maxLength": 160 },
     "intent": { "type": "string", "minLength": 20, "maxLength": 2000 },
@@ -61,36 +61,55 @@
           "role": { "type": "string", "minLength": 5, "maxLength": 500 },
           "dimensions": { "$ref": "#/$defs/vec3Positive" },
           "color": { "$ref": "#/$defs/color" },
-          "materialPreset": { "enum": ["matte", "painted-metal", "brushed-metal", "glass", "liquid", "rubber", "fabric", "skin", "hazmat", "emissive", "desert", "dust"] },
+          "materialPreset": { "$ref": "#/$defs/materialPreset" },
           "bevel": { "type": "number", "minimum": 0, "maximum": 1 },
           "smooth": { "type": "boolean" },
-          "keyframes": {
-            "type": "array",
-            "minItems": 1,
-            "maxItems": 256,
-            "items": {
-              "type": "object",
-              "required": ["time", "location"],
-              "properties": {
-                "time": { "type": "number", "minimum": 0 },
-                "location": { "$ref": "#/$defs/vec3Position" },
-                "rotation": { "$ref": "#/$defs/vec3Rotation" }
-              },
-              "additionalProperties": false
-            }
-          }
+          "parentId": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+          "transformSpace": { "enum": ["world", "local"] },
+          "anchors": { "$ref": "#/$defs/anchors" },
+          "keyframes": { "$ref": "#/$defs/keyframes" }
         },
         "additionalProperties": false
       }
     },
+    "compounds": {
+      "type": "array",
+      "maxItems": 16,
+      "items": { "$ref": "#/$defs/compound" }
+    },
+    "templates": {
+      "type": "array",
+      "maxItems": 16,
+      "items": { "$ref": "#/$defs/template" }
+    },
+    "instances": {
+      "type": "array",
+      "maxItems": 32,
+      "items": { "$ref": "#/$defs/instance" }
+    },
+    "contacts": {
+      "type": "array",
+      "maxItems": 32,
+      "items": { "$ref": "#/$defs/contact" }
+    },
     "camera": {
       "type": "object",
-      "required": ["lensMm", "sensorWidthMm", "rig", "keyframes"],
+      "required": ["lensMm", "sensorWidthMm", "rig"],
       "properties": {
         "lensMm": { "type": "number", "minimum": 12, "maximum": 300 },
         "sensorWidthMm": { "type": "number", "minimum": 8, "maximum": 70 },
         "fStop": { "type": "number", "minimum": 0.7, "maximum": 32 },
-        "rig": { "type": "string", "minLength": 3, "maxLength": 500 },
+        "rig": {
+          "$comment": "Either the legacy operator note (string, always keyframed) or a structured rig object; scripts/lib/spec.mjs enforces the per-type geometry.",
+          "anyOf": [
+            { "type": "string", "minLength": 3, "maxLength": 500 },
+            { "type": "object" }
+          ]
+        },
+        "easing": { "$ref": "#/$defs/easingMap" },
+        "roll": { "$ref": "#/$defs/scalarChannel" },
+        "focus": { "$ref": "#/$defs/scalarChannel" },
+        "telemetry": { "type": "object" },
         "keyframes": {
           "type": "array",
           "minItems": 2,
@@ -110,6 +129,20 @@
       },
       "additionalProperties": false
     },
+    "beats": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "required": ["time"],
+        "properties": {
+          "time": { "type": "number", "minimum": 0 },
+          "label": { "type": "string", "minLength": 1, "maxLength": 120 }
+        },
+        "additionalProperties": false
+      }
+    },
     "seedance": {
       "type": "object",
       "required": ["model", "resolution", "aspectRatio", "generateAudio", "style", "continuity", "avoid"],
@@ -127,6 +160,142 @@
     }
   },
   "$defs": {
+    "materialPreset": { "enum": ["matte", "painted-metal", "brushed-metal", "glass", "liquid", "rubber", "fabric", "skin", "hazmat", "emissive", "desert", "dust"] },
+    "keyframes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 256,
+      "items": {
+        "type": "object",
+        "required": ["time", "location"],
+        "properties": {
+          "time": { "type": "number", "minimum": 0 },
+          "location": { "$ref": "#/$defs/vec3Position" },
+          "rotation": { "$ref": "#/$defs/vec3Rotation" },
+          "easing": { "$ref": "#/$defs/easingSpec" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "easingSpec": {
+      "$comment": "Named curve string, or { type, handles }; scripts/lib/spec.mjs enforces the BEZIER handle shape.",
+      "anyOf": [
+        { "type": "string" },
+        { "type": "object" }
+      ]
+    },
+    "easingMap": {
+      "type": "object",
+      "properties": {
+        "location": { "$ref": "#/$defs/easingSpec" },
+        "rotation": { "$ref": "#/$defs/easingSpec" },
+        "lens": { "$ref": "#/$defs/easingSpec" },
+        "focus": { "$ref": "#/$defs/easingSpec" }
+      },
+      "additionalProperties": false
+    },
+    "scalarChannel": {
+      "$comment": "A constant number or a { from, to } ramp; scripts/lib/spec.mjs enforces the numeric ranges.",
+      "anyOf": [
+        { "type": "number" },
+        {
+          "type": "object",
+          "properties": {
+            "from": { "type": "number" },
+            "to": { "type": "number" }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "anchors": {
+      "type": "array",
+      "maxItems": 32,
+      "items": { "$ref": "#/$defs/anchor" }
+    },
+    "anchor": {
+      "type": "object",
+      "required": ["id", "position"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "position": { "$ref": "#/$defs/vec3Position" },
+        "direction": { "$ref": "#/$defs/vec3Direction" }
+      },
+      "additionalProperties": false
+    },
+    "part": {
+      "type": "object",
+      "required": ["id", "primitive", "dimensions", "color", "location"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "primitive": { "enum": ["cube", "sphere", "cylinder", "cone"] },
+        "role": { "type": "string", "minLength": 5, "maxLength": 500 },
+        "dimensions": { "$ref": "#/$defs/vec3Positive" },
+        "color": { "$ref": "#/$defs/color" },
+        "materialPreset": { "$ref": "#/$defs/materialPreset" },
+        "bevel": { "type": "number", "minimum": 0, "maximum": 1 },
+        "smooth": { "type": "boolean" },
+        "parentPart": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "location": { "$ref": "#/$defs/vec3Position" },
+        "rotation": { "$ref": "#/$defs/vec3Rotation" },
+        "anchors": { "$ref": "#/$defs/anchors" }
+      },
+      "additionalProperties": false
+    },
+    "compound": {
+      "type": "object",
+      "required": ["id", "role", "parts", "keyframes"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "role": { "type": "string", "minLength": 5, "maxLength": 500 },
+        "parts": { "type": "array", "minItems": 1, "maxItems": 32, "items": { "$ref": "#/$defs/part" } },
+        "anchors": { "$ref": "#/$defs/anchors" },
+        "keyframes": { "$ref": "#/$defs/keyframes" }
+      },
+      "additionalProperties": false
+    },
+    "template": {
+      "type": "object",
+      "required": ["id", "role", "parts"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "role": { "type": "string", "minLength": 5, "maxLength": 500 },
+        "parts": { "type": "array", "minItems": 1, "maxItems": 32, "items": { "$ref": "#/$defs/part" } },
+        "anchors": { "$ref": "#/$defs/anchors" }
+      },
+      "additionalProperties": false
+    },
+    "instance": {
+      "type": "object",
+      "required": ["id", "template", "keyframes"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "template": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "role": { "type": "string", "minLength": 5, "maxLength": 500 },
+        "keyframes": { "$ref": "#/$defs/keyframes" }
+      },
+      "additionalProperties": false
+    },
+    "contact": {
+      "type": "object",
+      "required": ["relation", "a", "b"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "relation": { "enum": ["rider-seat", "hand-prop", "wheel-ground", "foot-ground", "hand-rail", "grip-surface", "contact"] },
+        "a": { "$ref": "#/$defs/contactPoint" },
+        "b": { "$ref": "#/$defs/contactPoint" }
+      },
+      "additionalProperties": false
+    },
+    "contactPoint": {
+      "type": "object",
+      "required": ["body", "anchor"],
+      "properties": {
+        "body": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "anchor": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" }
+      },
+      "additionalProperties": false
+    },
     "light": {
       "type": "object",
       "required": ["id", "type", "color", "energy", "location", "rotation"],
@@ -145,6 +314,7 @@
     "vec2Positive": { "type": "array", "prefixItems": [{ "type": "number", "exclusiveMinimum": 0, "maximum": 10000 }, { "type": "number", "exclusiveMinimum": 0, "maximum": 10000 }], "minItems": 2, "maxItems": 2 },
     "vec3Position": { "type": "array", "prefixItems": [{ "type": "number", "minimum": -10000, "maximum": 10000 }, { "type": "number", "minimum": -10000, "maximum": 10000 }, { "type": "number", "minimum": -10000, "maximum": 10000 }], "minItems": 3, "maxItems": 3 },
     "vec3Rotation": { "type": "array", "prefixItems": [{ "type": "number", "minimum": -36000, "maximum": 36000 }, { "type": "number", "minimum": -36000, "maximum": 36000 }, { "type": "number", "minimum": -36000, "maximum": 36000 }], "minItems": 3, "maxItems": 3 },
+    "vec3Direction": { "type": "array", "prefixItems": [{ "type": "number", "minimum": -1, "maximum": 1 }, { "type": "number", "minimum": -1, "maximum": 1 }, { "type": "number", "minimum": -1, "maximum": 1 }], "minItems": 3, "maxItems": 3 },
     "vec3Positive": { "type": "array", "prefixItems": [{ "type": "number", "exclusiveMinimum": 0, "maximum": 10000 }, { "type": "number", "exclusiveMinimum": 0, "maximum": 10000 }, { "type": "number", "exclusiveMinimum": 0, "maximum": 10000 }], "minItems": 3, "maxItems": 3 },
     "color": { "type": "array", "prefixItems": [{ "type": "number", "minimum": 0, "maximum": 1 }, { "type": "number", "minimum": 0, "maximum": 1 }, { "type": "number", "minimum": 0, "maximum": 1 }], "minItems": 3, "maxItems": 3 }
   },

@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/HiAPIAI/awesome-codex-blender-seedance-workflows/main/schemas/camera-track.schema.json",
+  "$comment": "scripts/lib/camera-track.mjs additionally enforces cross-field rules JSON Schema cannot express: finite matrix/lens/dof numbers, a contiguous frame sequence matching frameStart/frameEnd, strictly increasing time, and frame counts consistent with fps and the frame range.",
+  "title": "Codex Blender Camera Track",
+  "type": "object",
+  "required": ["version", "coordinateConvention", "fps", "frameStart", "frameEnd", "source", "frames"],
+  "properties": {
+    "$schema": { "type": "string", "minLength": 1, "maxLength": 500 },
+    "version": { "const": 1 },
+    "coordinateConvention": { "enum": ["blender-right-handed-z-up"] },
+    "fps": { "type": "number", "exclusiveMinimum": 0, "maximum": 240 },
+    "frameStart": { "type": "integer", "minimum": 0, "maximum": 1000000 },
+    "frameEnd": { "type": "integer", "minimum": 0, "maximum": 1000000 },
+    "unit": { "enum": ["meter"] },
+    "source": {
+      "type": "object",
+      "required": ["hash"],
+      "properties": {
+        "hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "blendFile": { "type": "string", "minLength": 1, "maxLength": 1024 },
+        "camera": { "type": "string", "minLength": 1, "maxLength": 256 },
+        "blenderVersion": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "recordedAt": { "type": "string", "minLength": 1, "maxLength": 64 }
+      },
+      "additionalProperties": false
+    },
+    "frames": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 100000,
+      "items": { "$ref": "#/$defs/frame" }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "frame": {
+      "type": "object",
+      "required": ["frame", "time", "matrix", "lensMm", "sensorWidthMm"],
+      "properties": {
+        "frame": { "type": "integer", "minimum": 0, "maximum": 1000000 },
+        "time": { "type": "number", "minimum": 0, "maximum": 100000 },
+        "matrix": {
+          "type": "array",
+          "minItems": 16,
+          "maxItems": 16,
+          "items": { "type": "number" }
+        },
+        "lensMm": { "type": "number", "exclusiveMinimum": 0, "maximum": 100000 },
+        "focusDistance": { "type": "number", "minimum": 0, "maximum": 1000000 },
+        "fStop": { "type": "number", "exclusiveMinimum": 0, "maximum": 1000 },
+        "sensorWidthMm": { "type": "number", "exclusiveMinimum": 0, "maximum": 1000 },
+        "sensorShiftX": { "type": "number", "minimum": -10, "maximum": 10 },
+        "sensorShiftY": { "type": "number", "minimum": -10, "maximum": 10 }
+      },
+      "additionalProperties": false
+    }
+  }
+}
