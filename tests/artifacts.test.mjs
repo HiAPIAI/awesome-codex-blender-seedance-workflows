@@ -116,6 +116,8 @@ test("staged render publication preserves the previous render until replacement 
       "render-report.json",
       "review-report.json",
       "review-checklist.md",
+      "handoff-manifest.json",
+      "seedance-handoff.md",
     ]) {
       fs.writeFileSync(path.join(staging.directory, name), `new-${name}`);
     }
