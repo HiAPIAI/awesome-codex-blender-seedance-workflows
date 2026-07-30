@@ -13,6 +13,7 @@ export async function createReviewArtifacts({
   sequence,
   video,
   hashes,
+  motionTrace,
   includeBlockingSvg = false,
 }) {
   const reviewDirectory = path.join(output, "review");
@@ -70,6 +71,7 @@ export async function createReviewArtifacts({
       last: sequence.last.frame,
     },
     video,
+    motionTrace,
     automaticChecks,
     artifacts,
     humanReviewComplete: false,
@@ -145,6 +147,7 @@ export function buildReviewChecklist(compiled, report) {
     "- [ ] Inspect `review/contact-sheet.png` and the first, middle, and last stills.",
     "- [ ] Confirm subject spacing, contacts, screen direction, and action order.",
     "- [ ] Confirm camera path, lens changes, horizon, and reveal timing.",
+    "- [ ] Inspect `motion-trace.json` when exact per-frame camera, target, lens, or proxy transforms matter.",
     "- [ ] Review every automated flag in `review-report.json` and accept or fix it.",
     "- [ ] Confirm duration, frame rate, resolution, and aspect ratio match the generation request.",
     "- [ ] Mark `humanReviewComplete` only after the complete previs passes review.",

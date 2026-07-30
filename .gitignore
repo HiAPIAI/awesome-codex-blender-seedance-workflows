@@ -9,6 +9,7 @@ manifest.json
 prompt.txt
 seedance.request.json
 render-report.json
+motion-trace.json
 review-report.json
 review-checklist.md
 blocking-top.svg

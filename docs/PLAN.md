@@ -25,13 +25,14 @@ Provide the smallest trustworthy bridge between Codex, Blender previs, and Seeda
 - [x] Preserve the previous render through isolated staging and recoverable promotion.
 - [x] Bind paid submission to the reviewed request/video hashes and completed human-review flag.
 - [x] Bind recovery to the exact API credential and bound the idempotency window, API responses, media uploads, and all-address DNS-pinned MP4 downloads.
+- [x] Record and validate evaluated per-frame camera, lens, target, and proxy transforms from Blender.
 
-## P2 - authoring adapters
+## P2 - focused authoring
 
 - Add a cached Blender 4.5 LTS/current 5.x headless render matrix when CI download/runtime budget is available; local release verification remains required until then.
-- Import a constrained subset of Blockout metadata into `shot.json`.
-- Add a Blender MCP handoff prompt that exports only schema-approved state.
-- Add GLB/FBX proxy import after a license and sandbox boundary review.
+- Add a rights-cleared start-image handoff only after the production Seedance request contract and paid preflight binding are verified end to end.
+
+Blockout, Blender MCP, and GLB/FBX import remain external authoring options, not planned core layers. Add an adapter only when a concrete shot cannot be expressed safely with the existing primitive schema.
 
 ## P3 - community scale
 
