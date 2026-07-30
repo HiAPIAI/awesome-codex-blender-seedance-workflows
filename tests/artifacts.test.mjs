@@ -48,12 +48,14 @@ test("render cleanup removes only allow-listed generated artifacts", () => {
     fs.writeFileSync(path.join(directory, "frames", "frame_0001.png"), "frame");
     fs.writeFileSync(path.join(directory, "review", "contact-sheet.png"), "sheet");
     fs.writeFileSync(path.join(directory, "previs.mp4"), "video");
+    fs.writeFileSync(path.join(directory, "motion-trace.json"), "trace");
     fs.writeFileSync(path.join(directory, "previs.tmp-123.mp4"), "temporary");
     fs.writeFileSync(path.join(directory, "production-notes.txt"), "keep me");
     const removed = cleanRenderArtifacts(directory, "test-shot");
     assert.ok(removed.includes("frames/"));
     assert.ok(removed.includes("review/"));
     assert.ok(removed.includes("previs.mp4"));
+    assert.ok(removed.includes("motion-trace.json"));
     assert.equal(fs.readFileSync(path.join(directory, "production-notes.txt"), "utf8"), "keep me");
     releaseLock();
   });
@@ -110,6 +112,7 @@ test("staged render publication preserves the previous render until replacement 
       "seedance.request.json",
       "manifest.json",
       "previs.blend",
+      "motion-trace.json",
       "render-report.json",
       "review-report.json",
       "review-checklist.md",

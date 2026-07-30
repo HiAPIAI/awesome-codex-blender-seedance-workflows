@@ -10,13 +10,14 @@ This is not another prompt gallery. Every included workflow has a versioned JSON
 
 ```mermaid
 flowchart LR
-  A["Codex edits shot.json"] --> B["Validate and compile"]
-  B --> C["Blender renders gray-box previs"]
-  C --> R["Verify media and build review artifacts"]
-  R --> D["Human reviews motion and camera"]
-  D --> E["HiAPI preflight token"]
-  E --> F["Seedance 2.0 generation"]
-  F --> G["Human continuity review"]
+  A["2D start frame locks art and composition"] --> B["Codex edits shot.json"]
+  B --> C["Validate and compile"]
+  C --> D["Blender blocks motion and camera"]
+  D --> R["Verify media and motion trace"]
+  R --> E["Human reviews motion and camera"]
+  E --> F["HiAPI preflight token"]
+  F --> G["Seedance 2.0 generation"]
+  G --> H["Human continuity review"]
 ```
 
 ## What ships
@@ -29,6 +30,20 @@ flowchart LR
 | [Desert RV Laboratory](examples/desert-rv-laboratory/shot.json) | Warm/cold interior contrast, glass and metal response, subtle performance | 8s | 35mm slow dolly-in |
 
 The engine supports white-listed cubes, spheres, cylinders, cones, object transforms, camera transforms, focal-length changes, and linear keyframes. Optional cinematic specs can select bounded Cycles samples, material presets, bevels, smooth shading, depth of field, volumetric density, and up to 16 validated lights. It deliberately does not execute arbitrary model-authored Python.
+
+## Authoring method
+
+Adapted from [Reid Hannaford's Blender-to-Seedance process](https://x.com/reidhannaford/status/2071595581508563168): decide the visual frame in 2D first, then use Blender to solve only blocking, timing, occlusion, and camera motion. Seedance supplies production appearance; the previs is not a modeling portfolio.
+
+| Build in Blender | Skip unless it changes the shot |
+|---|---|
+| Silhouette and approximate volume | Final topology and subdivision |
+| Relative scale and ground contact | Faces, fingers, and costume detail |
+| Paths, spacing, overlap, and occlusion | Micro-textures and hidden surfaces |
+| Camera height, lens, target, and horizon | Decorative geometry outside frame |
+| Distinct action and camera beats | Extra keyframes between clear beats |
+
+Match frame 1 to the approved 2D start frame, animate with the fewest readable keys, and change only one class of variable per iteration: blocking, timing, or camera. Review the complete MP4 and use `motion-trace.json` for exact evaluated transforms. The current CLI uses the 2D frame as an authoring reference and submits only the previs video; it does not automatically upload the start image.
 
 ## Quick start
 
@@ -85,6 +100,7 @@ outputs/<shot-id>/
 |-- prompt.txt
 |-- seedance.request.json
 |-- previs.blend
+|-- motion-trace.json
 |-- previs.mp4
 |-- render-report.json
 |-- review-report.json
@@ -100,7 +116,7 @@ outputs/<shot-id>/
 `-- hiapi/                # only after a confirmed task
 ```
 
-The compiler and renderer claim an empty output directory with a shot-specific marker and hold an exclusive lock while writing; they refuse non-empty unowned directories, concurrent writers, and reuse by another shot. A render is built and verified in an isolated staging directory, so Blender, encoding, or review failure leaves the previous published render intact. Promotion uses a recoverable backup transaction, and a later run repairs an interrupted promotion before starting. The renderer requires an exact contiguous PNG sequence, encodes to a temporary MP4, and uses FFprobe to verify H.264/yuv420p, dimensions, frame rate, and frame count before publication. `review-report.json` records the verified media facts plus automatic blank-frame and abrupt-luma-change flags. Those flags are triage aids, not a creative pass. Generated media, reports, task journals, staging data, and `.blend` files are ignored by Git even under a custom output directory; the manifest stores content hashes without embedding API keys or machine-specific paths.
+The compiler and renderer claim an empty output directory with a shot-specific marker and hold an exclusive lock while writing; they refuse non-empty unowned directories, concurrent writers, and reuse by another shot. A render is built and verified in an isolated staging directory, so Blender, encoding, or review failure leaves the previous published render intact. Promotion uses a recoverable backup transaction, and a later run repairs an interrupted promotion before starting. Blender writes `motion-trace.json` from its evaluated dependency graph: every rendered frame records the actual camera location, target, forward/up vectors, focal length, horizontal field of view, and each proxy transform after interpolation and constraints. The Node wrapper rejects missing frames, timeline drift, malformed vectors, or object-set drift before publication. The renderer requires an exact contiguous PNG sequence, encodes to a temporary MP4, and uses FFprobe to verify H.264/yuv420p, dimensions, frame rate, and frame count before publication. `review-report.json` records the verified media facts plus automatic blank-frame and abrupt-luma-change flags. Those flags are triage aids, not a creative pass. Generated media, reports, task journals, staging data, and `.blend` files are ignored by Git even under a custom output directory; the manifest stores content hashes without embedding API keys or machine-specific paths.
 
 ## Design decisions
 

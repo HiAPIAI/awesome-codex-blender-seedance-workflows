@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 
 import bpy
+from mathutils import Vector
 
 
 def parse_args():
@@ -202,6 +203,71 @@ def create_camera(camera_spec):
         camera_data.keyframe_insert(data_path="lens", frame=keyframe["frame"])
         target.keyframe_insert(data_path="location", frame=keyframe["frame"])
     bpy.context.scene.camera = camera
+    return camera, target
+
+
+def rounded(value):
+    return round(float(value), 6)
+
+
+def vector(values):
+    return [rounded(value) for value in values]
+
+
+def record_motion_trace(spec, output, objects, camera, target):
+    scene = bpy.context.scene
+    timeline = spec["timeline"]
+    records = []
+    for frame in range(timeline["frameStart"], timeline["frameEnd"] + 1):
+        scene.frame_set(frame)
+        dependency_graph = bpy.context.evaluated_depsgraph_get()
+        evaluated_camera = camera.evaluated_get(dependency_graph)
+        evaluated_target = target.evaluated_get(dependency_graph)
+        camera_matrix = evaluated_camera.matrix_world
+        camera_location = camera_matrix.to_translation()
+        target_location = evaluated_target.matrix_world.to_translation()
+        camera_rotation = camera_matrix.to_quaternion()
+        forward = camera_rotation @ Vector((0.0, 0.0, -1.0))
+        up = camera_rotation @ Vector((0.0, 1.0, 0.0))
+        object_records = []
+        for item in spec["objects"]:
+            evaluated_object = objects[item["id"]].evaluated_get(dependency_graph)
+            object_records.append({
+                "id": item["id"],
+                "location": vector(evaluated_object.matrix_world.to_translation()),
+                "rotationEulerDeg": vector(
+                    math.degrees(value)
+                    for value in evaluated_object.matrix_world.to_euler("XYZ")
+                ),
+            })
+        records.append({
+            "frame": frame,
+            "timeSeconds": rounded((frame - timeline["frameStart"]) / timeline["fps"]),
+            "camera": {
+                "location": vector(camera_location),
+                "target": vector(target_location),
+                "forward": vector(forward.normalized()),
+                "up": vector(up.normalized()),
+                "lensMm": rounded(evaluated_camera.data.lens),
+                "horizontalFovDeg": rounded(math.degrees(evaluated_camera.data.angle_x)),
+                "distanceToTarget": rounded((target_location - camera_location).length),
+            },
+            "objects": object_records,
+        })
+    trace = {
+        "version": 1,
+        "shotId": spec["id"],
+        "fps": timeline["fps"],
+        "frameStart": timeline["frameStart"],
+        "frameEnd": timeline["frameEnd"],
+        "frameCount": len(records),
+        "objectIds": [item["id"] for item in spec["objects"]],
+        "frames": records,
+    }
+    with (output / "motion-trace.json").open("w", encoding="utf-8") as handle:
+        json.dump(trace, handle, indent=2)
+        handle.write("\n")
+    scene.frame_set(timeline["frameStart"])
 
 
 def make_linear():
@@ -271,11 +337,13 @@ def main():
     clear_scene()
     configure_scene(spec, output)
     create_ground(spec["world"])
+    objects = {}
     for item in spec["objects"]:
-        create_primitive(item)
+        objects[item["id"]] = create_primitive(item)
     create_lights(spec["world"])
-    create_camera(spec["camera"])
+    camera, target = create_camera(spec["camera"])
     make_linear()
+    record_motion_trace(spec, output, objects, camera, target)
     blend_file = output / "previs.blend"
     bpy.ops.wm.save_as_mainfile(filepath=str(blend_file))
     timeline = spec["timeline"]
@@ -317,7 +385,7 @@ def main():
         "resolution": spec["resolution"],
         "sceneSaved": blend_file.exists() and blend_file.stat().st_size > 0,
         "encoded": False,
-        "files": ["previs.blend"] + (["frames/"] if options.render else []),
+        "files": ["previs.blend", "motion-trace.json"] + (["frames/"] if options.render else []),
     }
     with (output / "render-report.json").open("w", encoding="utf-8") as handle:
         json.dump(report, handle, indent=2)
