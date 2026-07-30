@@ -2,6 +2,9 @@ import path from "node:path";
 import { canonicalJson, readJson, sha256 } from "./io.mjs";
 
 const primitives = new Set(["cube", "sphere", "cylinder", "cone"]);
+const materialPresets = new Set(["matte", "painted-metal", "brushed-metal", "glass", "liquid", "rubber", "fabric", "skin", "hazmat", "emissive", "desert", "dust"]);
+const renderEngines = new Set(["workbench", "cycles"]);
+const lightTypes = new Set(["area", "point", "sun", "spot"]);
 const outputResolutions = new Set(["480p", "720p", "1080p", "4k"]);
 const aspectRatios = new Set(["16:9", "9:16", "1:1", "4:3", "3:4", "21:9", "adaptive"]);
 const maximumCoordinate = 10000;
@@ -54,11 +57,42 @@ export function validateShotSpec(spec) {
 
 function validateWorld(world, fail) {
   if (!plainObject(world)) return fail("world", "must be an object.");
-  rejectUnknown(world, new Set(["background", "groundColor", "groundSize", "lighting"]), "world", fail);
+  rejectUnknown(world, new Set(["background", "groundColor", "groundSize", "lighting", "render", "lights"]), "world", fail);
   color(world.background, "world.background", fail);
   color(world.groundColor, "world.groundColor", fail);
   vector(world.groundSize, 2, "world.groundSize", fail, (value) => value > 0 && value <= maximumCoordinate);
   stringBetween(world.lighting, 5, 1000, "world.lighting", fail);
+  if (world.render !== undefined) {
+    if (!plainObject(world.render)) {
+      fail("world.render", "must be an object.");
+    } else {
+      rejectUnknown(world.render, new Set(["engine", "samples", "volumeDensity"]), "world.render", fail);
+      if (!renderEngines.has(world.render.engine)) fail("world.render.engine", `must be one of ${[...renderEngines].join(", ")}.`);
+      integerRange(world.render.samples, 1, 128, "world.render.samples", fail);
+      if (world.render.volumeDensity !== undefined) numberRange(world.render.volumeDensity, 0, 0.05, "world.render.volumeDensity", fail);
+    }
+  }
+  if (world.lights !== undefined) validateLights(world.lights, fail);
+}
+
+function validateLights(lights, fail) {
+  if (!Array.isArray(lights) || lights.length > 16) return fail("world.lights", "must contain at most 16 lights.");
+  const ids = new Set();
+  lights.forEach((light, index) => {
+    const at = `world.lights[${index}]`;
+    if (!plainObject(light)) return fail(at, "must be an object.");
+    rejectUnknown(light, new Set(["id", "type", "color", "energy", "location", "rotation", "size", "spotSize"]), at, fail);
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(light.id || "")) fail(`${at}.id`, "must be lowercase kebab-case.");
+    if (ids.has(light.id)) fail(`${at}.id`, `duplicates "${light.id}".`);
+    ids.add(light.id);
+    if (!lightTypes.has(light.type)) fail(`${at}.type`, `must be one of ${[...lightTypes].join(", ")}.`);
+    color(light.color, `${at}.color`, fail);
+    numberRange(light.energy, 0, 100000, `${at}.energy`, fail);
+    position(light.location, `${at}.location`, fail);
+    vector(light.rotation, 3, `${at}.rotation`, fail, (value) => Math.abs(value) <= maximumRotation);
+    if (light.size !== undefined) numberRange(light.size, Number.EPSILON, 1000, `${at}.size`, fail);
+    if (light.spotSize !== undefined) numberRange(light.spotSize, 1, 179, `${at}.spotSize`, fail);
+  });
 }
 
 function validateObjects(objects, duration, fps, fail, warnings) {
@@ -70,7 +104,7 @@ function validateObjects(objects, duration, fps, fail, warnings) {
   objects.forEach((object, index) => {
     const at = `objects[${index}]`;
     if (!plainObject(object)) return fail(at, "must be an object.");
-    rejectUnknown(object, new Set(["id", "primitive", "role", "dimensions", "color", "keyframes"]), at, fail);
+    rejectUnknown(object, new Set(["id", "primitive", "role", "dimensions", "color", "materialPreset", "bevel", "smooth", "keyframes"]), at, fail);
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(object.id || "")) fail(`${at}.id`, "must be lowercase kebab-case.");
     if (ids.has(object.id)) fail(`${at}.id`, `duplicates "${object.id}".`);
     ids.add(object.id);
@@ -78,6 +112,9 @@ function validateObjects(objects, duration, fps, fail, warnings) {
     stringBetween(object.role, 5, 500, `${at}.role`, fail);
     vector(object.dimensions, 3, `${at}.dimensions`, fail, (value) => value > 0 && value <= maximumCoordinate);
     color(object.color, `${at}.color`, fail);
+    if (object.materialPreset !== undefined && !materialPresets.has(object.materialPreset)) fail(`${at}.materialPreset`, `must be one of ${[...materialPresets].join(", ")}.`);
+    if (object.bevel !== undefined) numberRange(object.bevel, 0, 1, `${at}.bevel`, fail);
+    if (object.smooth !== undefined && typeof object.smooth !== "boolean") fail(`${at}.smooth`, "must be a boolean.");
     validateKeyframes(object.keyframes, duration, fps, `${at}.keyframes`, fail, warnings, object.role);
   });
 }
@@ -121,9 +158,10 @@ function validateKeyframes(keyframes, duration, fps, at, fail, warnings, role) {
 
 function validateCamera(camera, duration, fps, fail, warnings) {
   if (!plainObject(camera)) return fail("camera", "must be an object.");
-  rejectUnknown(camera, new Set(["lensMm", "sensorWidthMm", "rig", "keyframes"]), "camera", fail);
+  rejectUnknown(camera, new Set(["lensMm", "sensorWidthMm", "fStop", "rig", "keyframes"]), "camera", fail);
   numberRange(camera.lensMm, 12, 300, "camera.lensMm", fail);
   numberRange(camera.sensorWidthMm, 8, 70, "camera.sensorWidthMm", fail);
+  if (camera.fStop !== undefined) numberRange(camera.fStop, 0.7, 32, "camera.fStop", fail);
   stringBetween(camera.rig, 3, 500, "camera.rig", fail);
   if (!Array.isArray(camera.keyframes) || camera.keyframes.length < 2 || camera.keyframes.length > maximumKeyframes) {
     fail("camera.keyframes", `must contain between 2 and ${maximumKeyframes} keyframes.`);
@@ -241,7 +279,9 @@ export function compileSeedancePrompt(spec) {
     spec.intent,
     `Visual direction: ${spec.seedance.style}`,
     `Lighting contract: ${spec.world.lighting}`,
-    `Reference role: Video 1 is a gray-box Blender previs. Use it only for composition, spatial relationships, action order, action timing, camera path, lens rhythm, and pacing. Replace every proxy shape, flat material, label, and gray-box surface with the described cinematic subjects and environment; never retain the primitive CGI appearance.`,
+    spec.world.render?.engine === "cycles"
+      ? `Reference role: Video 1 is a cinematic Blender previs. Preserve its composition, spatial relationships, action order, action timing, camera path, lens rhythm, lighting contrast, and pacing while replacing simplified geometry with production-detail subjects and environment.`
+      : `Reference role: Video 1 is a gray-box Blender previs. Use it only for composition, spatial relationships, action order, action timing, camera path, lens rhythm, and pacing. Replace every proxy shape, flat material, label, and gray-box surface with the described cinematic subjects and environment; never retain the primitive CGI appearance.`,
     `Blocking contract: ${movement}.`,
     `Camera contract: ${spec.camera.rig}, ${spec.camera.lensMm}mm base lens on a ${spec.camera.sensorWidthMm}mm sensor; ${camera}. Preserve screen direction and reveal timing rather than copying viewport shading.`,
     `Continuity locks: ${spec.seedance.continuity.join("; ")}.`,

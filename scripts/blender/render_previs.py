@@ -25,9 +25,72 @@ def clear_scene():
                 collection.remove(item)
 
 
-def make_material(name, color):
+def set_node_input(node, names, value):
+    for name in names:
+        socket = node.inputs.get(name)
+        if socket is not None:
+            socket.default_value = value
+            return
+
+
+def make_material(name, color, preset="matte"):
     material = bpy.data.materials.new(name=f"mat-{name}")
     material.diffuse_color = (*color, 1.0)
+    material.use_nodes = True
+    nodes = material.node_tree.nodes
+    bsdf = nodes.get("Principled BSDF")
+    set_node_input(bsdf, ["Base Color"], (*color, 1.0))
+    settings = {
+        "matte": (0.0, 0.68),
+        "painted-metal": (0.35, 0.3),
+        "brushed-metal": (0.92, 0.24),
+        "rubber": (0.0, 0.88),
+        "fabric": (0.0, 0.78),
+        "skin": (0.0, 0.52),
+        "hazmat": (0.05, 0.4),
+        "desert": (0.0, 0.95),
+        "dust": (0.0, 0.9),
+        "liquid": (0.0, 0.12),
+        "glass": (0.0, 0.08),
+        "emissive": (0.0, 0.3),
+    }
+    metallic, roughness = settings.get(preset, settings["matte"])
+    set_node_input(bsdf, ["Metallic"], metallic)
+    set_node_input(bsdf, ["Roughness"], roughness)
+    if preset == "glass":
+        set_node_input(bsdf, ["Transmission Weight", "Transmission"], 1.0)
+        set_node_input(bsdf, ["IOR"], 1.46)
+    elif preset == "liquid":
+        set_node_input(bsdf, ["Transmission Weight", "Transmission"], 0.45)
+        set_node_input(bsdf, ["IOR"], 1.36)
+    elif preset == "hazmat":
+        set_node_input(bsdf, ["Coat Weight", "Coat"], 0.35)
+        set_node_input(bsdf, ["Coat Roughness"], 0.25)
+    elif preset == "emissive":
+        set_node_input(bsdf, ["Emission Color", "Emission"], (*color, 1.0))
+        set_node_input(bsdf, ["Emission Strength"], 8.0)
+    elif preset == "dust":
+        set_node_input(bsdf, ["Emission Color", "Emission"], (*color, 1.0))
+        set_node_input(bsdf, ["Emission Strength"], 0.3)
+    texture_settings = {
+        "painted-metal": (11.0, 0.14, 0.055),
+        "brushed-metal": (65.0, 0.1, 0.025),
+        "rubber": (28.0, 0.12, 0.03),
+        "fabric": (48.0, 0.16, 0.025),
+        "hazmat": (18.0, 0.1, 0.025),
+        "desert": (3.2, 0.32, 0.12),
+    }
+    if preset in texture_settings:
+        scale, strength, distance = texture_settings[preset]
+        noise = nodes.new(type="ShaderNodeTexNoise")
+        noise.inputs["Scale"].default_value = scale
+        noise.inputs["Detail"].default_value = 3.0
+        noise.inputs["Roughness"].default_value = 0.65
+        bump = nodes.new(type="ShaderNodeBump")
+        bump.inputs["Strength"].default_value = strength
+        bump.inputs["Distance"].default_value = distance
+        material.node_tree.links.new(noise.outputs["Fac"], bump.inputs["Height"])
+        material.node_tree.links.new(bump.outputs["Normal"], bsdf.inputs["Normal"])
     return material
 
 
@@ -47,7 +110,15 @@ def create_primitive(item):
     obj.name = item["id"]
     obj.dimensions = item["dimensions"]
     obj.color = (*item["color"], 1.0)
-    obj.data.materials.append(make_material(item["id"], item["color"]))
+    obj.data.materials.append(make_material(item["id"], item["color"], item.get("materialPreset", "matte")))
+    if item.get("smooth"):
+        for polygon in obj.data.polygons:
+            polygon.use_smooth = True
+    bevel_width = item.get("bevel", 0)
+    if bevel_width > 0:
+        modifier = obj.modifiers.new(name="cinematic-bevel", type="BEVEL")
+        modifier.width = min(bevel_width, min(item["dimensions"]) * 0.24)
+        modifier.segments = 3
     bpy.context.view_layer.update()
     for keyframe in item["keyframes"]:
         obj.location = keyframe["location"]
@@ -63,8 +134,49 @@ def create_ground(world):
     ground.name = "ground"
     ground.dimensions = (world["groundSize"][0], world["groundSize"][1], 0.2)
     ground.color = (*world["groundColor"], 1.0)
-    ground.data.materials.append(make_material("ground", world["groundColor"]))
+    ground.data.materials.append(make_material("ground", world["groundColor"], "desert"))
     bpy.context.view_layer.update()
+
+
+def create_lights(world):
+    for item in world.get("lights", []):
+        light_data = bpy.data.lights.new(item["id"], type=item["type"].upper())
+        light_data.color = item["color"]
+        light_data.energy = item["energy"]
+        if item["type"] == "area":
+            light_data.shape = "DISK"
+            light_data.size = item.get("size", 3.0)
+        elif item["type"] == "sun":
+            light_data.angle = math.radians(item.get("size", 4.0))
+        elif item["type"] in ("point", "spot"):
+            light_data.shadow_soft_size = item.get("size", 0.5)
+        if item["type"] == "spot":
+            light_data.spot_size = math.radians(item.get("spotSize", 45))
+            light_data.spot_blend = 0.45
+        light = bpy.data.objects.new(item["id"], light_data)
+        light.location = item["location"]
+        light.rotation_euler = [math.radians(value) for value in item["rotation"]]
+        bpy.context.collection.objects.link(light)
+
+
+def configure_world(world_spec):
+    world = bpy.context.scene.world
+    world.use_nodes = True
+    nodes = world.node_tree.nodes
+    links = world.node_tree.links
+    nodes.clear()
+    background = nodes.new(type="ShaderNodeBackground")
+    background.inputs["Color"].default_value = (*world_spec["background"], 1.0)
+    background.inputs["Strength"].default_value = 0.12
+    output = nodes.new(type="ShaderNodeOutputWorld")
+    links.new(background.outputs["Background"], output.inputs["Surface"])
+    density = world_spec.get("render", {}).get("volumeDensity", 0)
+    if density > 0:
+        volume = nodes.new(type="ShaderNodeVolumeScatter")
+        volume.inputs["Color"].default_value = (0.62, 0.38, 0.18, 1.0)
+        volume.inputs["Density"].default_value = density
+        volume.inputs["Anisotropy"].default_value = 0.35
+        links.new(volume.outputs["Volume"], output.inputs["Volume"])
 
 
 def create_camera(camera_spec):
@@ -78,6 +190,10 @@ def create_camera(camera_spec):
     constraint.target = target
     constraint.track_axis = "TRACK_NEGATIVE_Z"
     constraint.up_axis = "UP_Y"
+    if camera_spec.get("fStop") is not None:
+        camera_data.dof.use_dof = True
+        camera_data.dof.focus_object = target
+        camera_data.dof.aperture_fstop = camera_spec["fStop"]
     for keyframe in camera_spec["keyframes"]:
         camera.location = keyframe["location"]
         camera_data.lens = keyframe["lensMm"]
@@ -115,14 +231,28 @@ def configure_scene(spec, output):
     scene.render.resolution_x = spec["resolution"]["width"]
     scene.render.resolution_y = spec["resolution"]["height"]
     scene.render.resolution_percentage = 100
-    scene.render.engine = "BLENDER_WORKBENCH"
-    scene.display.shading.light = "STUDIO"
-    scene.display.shading.color_type = "MATERIAL"
-    scene.display.shading.show_shadows = True
-    scene.display.shading.show_cavity = True
-    scene.display.shading.cavity_type = "WORLD"
-    scene.display.shading.background_type = "WORLD"
-    scene.world.color = spec["world"]["background"]
+    render_spec = spec["world"].get("render", {"engine": "workbench", "samples": 1})
+    if render_spec["engine"] == "cycles":
+        scene.render.engine = "CYCLES"
+        scene.cycles.samples = render_spec["samples"]
+        scene.cycles.use_denoising = True
+        scene.cycles.max_bounces = 6
+        scene.cycles.diffuse_bounces = 3
+        scene.cycles.glossy_bounces = 3
+        scene.cycles.transmission_bounces = 4
+        scene.render.use_motion_blur = True
+        scene.view_settings.view_transform = "AgX"
+        scene.view_settings.look = "AgX - Medium High Contrast"
+        configure_world(spec["world"])
+    else:
+        scene.render.engine = "BLENDER_WORKBENCH"
+        scene.display.shading.light = "STUDIO"
+        scene.display.shading.color_type = "MATERIAL"
+        scene.display.shading.show_shadows = True
+        scene.display.shading.show_cavity = True
+        scene.display.shading.cavity_type = "WORLD"
+        scene.display.shading.background_type = "WORLD"
+        scene.world.color = spec["world"]["background"]
     frames = output / "frames"
     frames.mkdir(parents=True, exist_ok=True)
     scene.render.image_settings.file_format = "PNG"
@@ -143,6 +273,7 @@ def main():
     create_ground(spec["world"])
     for item in spec["objects"]:
         create_primitive(item)
+    create_lights(spec["world"])
     create_camera(spec["camera"])
     make_linear()
     blend_file = output / "previs.blend"

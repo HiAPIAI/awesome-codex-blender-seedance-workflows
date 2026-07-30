@@ -25,6 +25,9 @@ test("schema and runtime both reject representative boundary violations", () => 
     ["unknown nested property", (spec) => { spec.camera.keyframes[0].unexpected = true; }],
     ["odd H.264 width", (spec) => { spec.resolution.width = 641; }],
     ["out-of-range coordinate", (spec) => { spec.objects[0].keyframes[0].location[0] = 10001; }],
+    ["unsupported material preset", (spec) => { spec.objects[0].materialPreset = "unbounded-shader"; }],
+    ["excessive Cycles samples", (spec) => { spec.world.render = { engine: "cycles", samples: 129 }; }],
+    ["unsafe camera aperture", (spec) => { spec.camera.fStop = 0.2; }],
     ["too many continuity locks", (spec) => { spec.seedance.continuity = Array.from({ length: 33 }, (_, index) => `continuity lock ${index}`); }],
   ];
 
