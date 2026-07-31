@@ -1,5 +1,11 @@
 # TODO
 
+## 2026-07-31 - Blender vs Seedance publish comparison
+
+- Composed the 10-second Blender previs and Seedance 2.0 result into a synchronized 1080x1350 social comparison with full-frame stacked panels and clear source labels.
+- Preserved the generated soundtrack, trimmed both views to the shared 10-second interval, and encoded H.264/yuv420p video with AAC stereo audio at 24 fps.
+- Verified all 240 frames decode successfully, inspected early/middle/late frames plus a 1 fps contact sheet, and recorded SHA-256 `c63abfdde50d33f8bee9a43ad8e71596df260a469d135778ab07e3b1ec60d5ec`.
+
 ## 2026-07-31 - Granite cliff Seedance 2.0 generation
 
 - Generated the reviewed 10-second Blender previs through HiAPI Seedance 2.0 as task `tk-hiapi-01KYV4GTDQPDGKR8ZRRXCTF1H8` using the user-approved Chinese reference-video prompt.
