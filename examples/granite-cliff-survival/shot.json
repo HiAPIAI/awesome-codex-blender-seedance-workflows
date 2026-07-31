@@ -1,0 +1,494 @@
+{
+  "$schema": "../../schemas/shot-spec.schema.json",
+  "version": 2,
+  "id": "granite-cliff-survival",
+  "title": "Granite Cliff Survival",
+  "intent": "A single continuous ten-second survival shot follows one original professional climber hanging hundreds of meters above a mountain canyon after a foothold breaks, narrowly avoiding a dangerous rockfall, forcing a final exhausted pull onto the cliff edge, and ending on a restrained sunrise reveal of the immense alpine landscape.",
+  "duration": 10,
+  "fps": 24,
+  "resolution": { "width": 640, "height": 360 },
+  "world": {
+    "background": [0.62, 0.72, 0.86],
+    "groundColor": [0.13, 0.15, 0.18],
+    "groundSize": [260, 260],
+    "lighting": "Cold high-altitude morning atmosphere with a low golden sunrise from frame left, deep blue-gray mountain shadows, dense fog layered through the canyon, airborne granite dust and wind-driven particles, and natural high-contrast rim light separating the climber from the dark cliff.",
+    "render": {
+      "engine": "cycles",
+      "samples": 8,
+      "volumeDensity": 0.0008
+    },
+    "lights": [
+      { "id": "sunrise-key", "type": "sun", "color": [1.0, 0.42, 0.16], "energy": 3.5, "location": [-60, -45, 80], "rotation": [48, -22, -58], "size": 7 },
+      { "id": "cold-sky-fill", "type": "point", "color": [0.28, 0.5, 1.0], "energy": 2600, "location": [-6, -9, 66], "rotation": [0, 0, 0], "size": 8 },
+      { "id": "cliff-rim", "type": "point", "color": [1.0, 0.62, 0.34], "energy": 2200, "location": [7, -6, 72], "rotation": [0, 0, 0], "size": 6 },
+      { "id": "canyon-bounce", "type": "point", "color": [0.18, 0.34, 0.7], "energy": 1700, "location": [0, -12, 58], "rotation": [0, 0, 0], "size": 9 }
+    ]
+  },
+  "objects": [
+    {
+      "id": "cliff-face",
+      "primitive": "cube",
+      "role": "massive near-vertical dark gray granite cliff extending far below the climber, with sharp fractures, weathered ledges, moss patches, and loose stone",
+      "dimensions": [34, 4, 150],
+      "color": [0.18, 0.2, 0.23],
+      "materialPreset": "matte",
+      "bevel": 0.45,
+      "keyframes": [{ "time": 0, "location": [0, 2, -5], "rotation": [0, 0, -1.5] }]
+    },
+    {
+      "id": "summit-shelf",
+      "primitive": "cube",
+      "role": "wind-scoured granite shelf at the top edge where the climber finally kneels",
+      "dimensions": [34, 22, 1.8],
+      "color": [0.125, 0.135, 0.145],
+      "materialPreset": "matte",
+      "bevel": 0.7,
+      "keyframes": [{ "time": 0, "location": [0, 11, 69.5], "rotation": [0, 0, -1.5] }]
+    },
+    {
+      "id": "lower-handhold",
+      "primitive": "cube",
+      "role": "small fractured granite edge supporting the climber's single right-hand grip at the opening",
+      "dimensions": [1.2, 0.8, 0.35],
+      "color": [0.16, 0.17, 0.18],
+      "materialPreset": "matte",
+      "bevel": 0.18,
+      "anchors": [{ "id": "grip-edge", "position": [-0.35, -0.38, 0.12], "direction": [0, -1, 0] }],
+      "keyframes": [{ "time": 0, "location": [-1.0, -0.35, 63.8], "rotation": [0, 0, 8] }]
+    },
+    {
+      "id": "upper-handhold",
+      "primitive": "cube",
+      "role": "higher secure granite ledge grabbed during the final pull upward",
+      "dimensions": [1.8, 0.9, 0.45],
+      "color": [0.18, 0.19, 0.2],
+      "materialPreset": "matte",
+      "bevel": 0.2,
+      "anchors": [{ "id": "upper-grip-edge", "position": [0.15, -0.4, 0.12], "direction": [0, -1, 0] }],
+      "keyframes": [{ "time": 0, "location": [1.55, -0.3, 67.2], "rotation": [0, 0, -7] }]
+    },
+    {
+      "id": "fracture-shadow-a",
+      "primitive": "cube",
+      "role": "deep vertical fracture line breaking up the granite face beside the climber",
+      "dimensions": [0.18, 0.18, 13],
+      "color": [0.012, 0.016, 0.022],
+      "materialPreset": "matte",
+      "bevel": 0.03,
+      "keyframes": [{ "time": 0, "location": [-4.2, -0.08, 62], "rotation": [0, 12, -9] }]
+    },
+    {
+      "id": "fracture-shadow-b",
+      "primitive": "cube",
+      "role": "sharp diagonal granite crack crossing behind the falling debris path",
+      "dimensions": [0.16, 0.18, 10],
+      "color": [0.014, 0.018, 0.024],
+      "materialPreset": "matte",
+      "bevel": 0.03,
+      "keyframes": [{ "time": 0, "location": [4.1, -0.1, 61], "rotation": [0, 28, 12] }]
+    },
+    {
+      "id": "moss-patch-a",
+      "primitive": "cube",
+      "role": "thin patch of cold alpine moss clinging inside a damp granite seam",
+      "dimensions": [2.2, 0.12, 0.55],
+      "color": [0.12, 0.2, 0.105],
+      "materialPreset": "matte",
+      "bevel": 0.12,
+      "keyframes": [{ "time": 0, "location": [-5.2, -0.08, 66.4], "rotation": [0, 0, -14] }]
+    },
+    {
+      "id": "moss-patch-b",
+      "primitive": "cube",
+      "role": "second sparse moss patch emphasizing the weathered wet cliff texture",
+      "dimensions": [1.5, 0.12, 0.4],
+      "color": [0.09, 0.17, 0.08],
+      "materialPreset": "matte",
+      "bevel": 0.1,
+      "keyframes": [{ "time": 0, "location": [4.8, -0.1, 58.5], "rotation": [0, 0, 18] }]
+    },
+    {
+      "id": "climber-torso",
+      "primitive": "cylinder",
+      "role": "torso of one exhausted professional adult climber in a dark technical shell jacket and rope harness, moving with realistic weight and no superhero strength",
+      "dimensions": [0.78, 0.62, 1.25],
+      "color": [0.12, 0.16, 0.2],
+      "materialPreset": "fabric",
+      "bevel": 0.08,
+      "smooth": true,
+      "anchors": [{ "id": "harness-center", "position": [0, 0, -0.4], "direction": [0, 0, -1] }],
+      "keyframes": [
+        { "time": 0, "location": [-0.5, -1.3, 62.3], "rotation": [8, -13, -8], "easing": "EASE_IN_OUT" },
+        { "time": 3, "location": [-0.35, -1.35, 62.5], "rotation": [12, -8, 3], "easing": "EASE_IN" },
+        { "time": 4.7, "location": [0.95, -1.48, 61.8], "rotation": [18, -20, 25], "easing": "EASE_OUT" },
+        { "time": 6, "location": [1.25, -1.38, 62.0], "rotation": [10, -12, 16], "easing": "EASE_IN_OUT" },
+        { "time": 7.6, "location": [1.25, -1.25, 64.7], "rotation": [-8, -10, 7], "easing": "EASE_IN_OUT" },
+        { "time": 9, "location": [1.0, 0.4, 68.7], "rotation": [62, -5, 2], "easing": "EASE_OUT" },
+        { "time": 10, "location": [0.9, 2.2, 70.2], "rotation": [88, 0, 0] }
+      ]
+    },
+    {
+      "id": "climber-head",
+      "primitive": "sphere",
+      "role": "climber head turning upward to search for a safer hold before facing the sunrise valley",
+      "dimensions": [0.42, 0.4, 0.48],
+      "color": [0.42, 0.32, 0.25],
+      "materialPreset": "skin",
+      "smooth": true,
+      "parentId": "climber-torso",
+      "transformSpace": "local",
+      "keyframes": [
+        { "time": 0, "location": [0, -0.02, 0.88], "rotation": [-12, 0, -10], "easing": "EASE_IN_OUT" },
+        { "time": 3, "location": [0, -0.02, 0.88], "rotation": [-28, 0, 12], "easing": "EASE_IN_OUT" },
+        { "time": 6, "location": [0, -0.02, 0.88], "rotation": [8, 0, -18], "easing": "EASE_IN_OUT" },
+        { "time": 9, "location": [0, -0.02, 0.88], "rotation": [-5, 0, 0], "easing": "EASE_OUT" },
+        { "time": 10, "location": [0, -0.02, 0.88], "rotation": [-18, 0, -25] }
+      ]
+    },
+    {
+      "id": "climber-helmet",
+      "primitive": "sphere",
+      "role": "matte professional climbing helmet secured throughout the fall and recovery",
+      "dimensions": [0.5, 0.46, 0.3],
+      "color": [0.14, 0.17, 0.18],
+      "materialPreset": "matte",
+      "smooth": true,
+      "parentId": "climber-head",
+      "transformSpace": "local",
+      "keyframes": [{ "time": 0, "location": [0, 0, 0.2], "rotation": [0, 0, 0] }]
+    },
+    {
+      "id": "climber-backpack",
+      "primitive": "cube",
+      "role": "compact dark alpine backpack that stays strapped to the climber and reacts with restrained inertia",
+      "dimensions": [0.68, 0.34, 0.92],
+      "color": [0.075, 0.09, 0.105],
+      "materialPreset": "fabric",
+      "bevel": 0.16,
+      "parentId": "climber-torso",
+      "transformSpace": "local",
+      "keyframes": [{ "time": 0, "location": [0, 0.37, 0.08], "rotation": [0, 0, 0] }]
+    },
+    {
+      "id": "right-arm",
+      "primitive": "cylinder",
+      "role": "right arm under full body load, initially the only arm holding the small granite edge",
+      "dimensions": [0.22, 0.22, 1.25],
+      "color": [0.11, 0.14, 0.18],
+      "materialPreset": "fabric",
+      "smooth": true,
+      "parentId": "climber-torso",
+      "transformSpace": "local",
+      "keyframes": [
+        { "time": 0, "location": [-0.38, -0.03, 0.75], "rotation": [0, -18, -22], "easing": "EASE_IN_OUT" },
+        { "time": 3, "location": [-0.38, -0.03, 0.75], "rotation": [0, -12, -16], "easing": "EASE_IN_OUT" },
+        { "time": 6, "location": [-0.38, -0.03, 0.72], "rotation": [0, -5, -28], "easing": "EASE_IN_OUT" },
+        { "time": 9, "location": [-0.3, -0.05, 0.72], "rotation": [0, -28, -8] },
+        { "time": 10, "location": [-0.32, -0.02, 0.55], "rotation": [0, 50, -15] }
+      ]
+    },
+    {
+      "id": "right-hand",
+      "primitive": "sphere",
+      "role": "gloved right hand gripping fractured granite with visible strain",
+      "dimensions": [0.24, 0.19, 0.2],
+      "color": [0.08, 0.09, 0.1],
+      "materialPreset": "fabric",
+      "smooth": true,
+      "anchors": [{ "id": "palm-grip", "position": [0, -0.08, 0], "direction": [0, -1, 0] }],
+      "parentId": "climber-torso",
+      "transformSpace": "local",
+      "keyframes": [
+        { "time": 0, "location": [-0.68, -0.12, 1.2], "rotation": [0, 0, -12], "easing": "EASE_IN_OUT" },
+        { "time": 3, "location": [-0.68, -0.12, 1.2], "rotation": [0, 0, -8], "easing": "EASE_IN_OUT" },
+        { "time": 6, "location": [-0.72, -0.12, 1.12], "rotation": [0, 0, -18], "easing": "EASE_IN_OUT" },
+        { "time": 9, "location": [-0.5, -0.12, 1.16], "rotation": [0, 0, 0] },
+        { "time": 10, "location": [-0.55, -0.05, 0.72], "rotation": [0, 0, 0] }
+      ]
+    },
+    {
+      "id": "left-arm",
+      "primitive": "cylinder",
+      "role": "left arm searching, reaching sideways during the dodge, then extending to the higher ledge",
+      "dimensions": [0.22, 0.22, 1.25],
+      "color": [0.11, 0.14, 0.18],
+      "materialPreset": "fabric",
+      "smooth": true,
+      "parentId": "climber-torso",
+      "transformSpace": "local",
+      "keyframes": [
+        { "time": 0, "location": [0.4, -0.04, 0.2], "rotation": [0, 28, 32], "easing": "EASE_IN_OUT" },
+        { "time": 3, "location": [0.45, -0.05, 0.55], "rotation": [0, -18, 58], "easing": "EASE_IN" },
+        { "time": 4.7, "location": [0.48, -0.08, 0.45], "rotation": [0, 36, 78], "easing": "EASE_OUT" },
+        { "time": 6, "location": [0.45, -0.08, 0.65], "rotation": [0, -24, 42], "easing": "EASE_IN_OUT" },
+        { "time": 7.6, "location": [0.42, -0.1, 1.0], "rotation": [0, -18, -12], "easing": "EASE_IN_OUT" },
+        { "time": 9, "location": [0.36, -0.08, 0.78], "rotation": [0, 38, 12] },
+        { "time": 10, "location": [0.5, -0.02, 0.52], "rotation": [0, 55, 10] }
+      ]
+    },
+    {
+      "id": "left-hand",
+      "primitive": "sphere",
+      "role": "gloved left hand that finds the higher ledge and drives the final pull",
+      "dimensions": [0.24, 0.19, 0.2],
+      "color": [0.08, 0.09, 0.1],
+      "materialPreset": "fabric",
+      "smooth": true,
+      "anchors": [{ "id": "upper-palm-grip", "position": [0, -0.08, 0], "direction": [0, -1, 0] }],
+      "parentId": "climber-torso",
+      "transformSpace": "local",
+      "keyframes": [
+        { "time": 0, "location": [0.72, -0.12, 0.0], "rotation": [0, 0, 12], "easing": "EASE_IN_OUT" },
+        { "time": 3, "location": [0.82, -0.12, 0.65], "rotation": [0, 0, 18], "easing": "EASE_IN" },
+        { "time": 4.7, "location": [0.92, -0.14, 0.38], "rotation": [0, 0, 28], "easing": "EASE_OUT" },
+        { "time": 6, "location": [0.78, -0.12, 0.9], "rotation": [0, 0, 12], "easing": "EASE_IN_OUT" },
+        { "time": 7.6, "location": [0.58, -0.12, 1.42], "rotation": [0, 0, 2], "easing": "EASE_IN_OUT" },
+        { "time": 9, "location": [0.55, -0.08, 1.05], "rotation": [0, 0, 0] },
+        { "time": 10, "location": [0.72, -0.02, 0.68], "rotation": [0, 0, 0] }
+      ]
+    },
+    {
+      "id": "left-leg",
+      "primitive": "cylinder",
+      "role": "left leg swinging sideways to avoid rockfall before finding a stable foothold",
+      "dimensions": [0.27, 0.27, 1.45],
+      "color": [0.09, 0.12, 0.15],
+      "materialPreset": "fabric",
+      "smooth": true,
+      "parentId": "climber-torso",
+      "transformSpace": "local",
+      "keyframes": [
+        { "time": 0, "location": [-0.24, 0, -1.0], "rotation": [0, 20, -8], "easing": "EASE_IN_OUT" },
+        { "time": 3, "location": [-0.22, 0, -1.0], "rotation": [0, 26, -12], "easing": "EASE_IN" },
+        { "time": 4.7, "location": [-0.55, -0.05, -0.82], "rotation": [0, 52, -28], "easing": "EASE_OUT" },
+        { "time": 6, "location": [-0.42, 0, -0.92], "rotation": [0, 36, -18], "easing": "EASE_IN_OUT" },
+        { "time": 9, "location": [-0.28, 0, -0.8], "rotation": [0, 62, -5] },
+        { "time": 10, "location": [-0.38, 0, -0.72], "rotation": [0, 78, -8] }
+      ]
+    },
+    {
+      "id": "right-leg",
+      "primitive": "cylinder",
+      "role": "right leg whose foothold fails, then presses against the granite during the pull",
+      "dimensions": [0.27, 0.27, 1.45],
+      "color": [0.09, 0.12, 0.15],
+      "materialPreset": "fabric",
+      "smooth": true,
+      "parentId": "climber-torso",
+      "transformSpace": "local",
+      "keyframes": [
+        { "time": 0, "location": [0.3, 0, -0.95], "rotation": [0, -25, 14], "easing": "EASE_IN_OUT" },
+        { "time": 3, "location": [0.34, 0, -1.02], "rotation": [0, -32, 18], "easing": "EASE_IN" },
+        { "time": 4.7, "location": [0.58, -0.05, -0.78], "rotation": [0, -48, 38], "easing": "EASE_OUT" },
+        { "time": 6, "location": [0.5, 0, -0.88], "rotation": [0, -38, 26], "easing": "EASE_IN_OUT" },
+        { "time": 9, "location": [0.32, 0, -0.72], "rotation": [0, -64, 8] },
+        { "time": 10, "location": [0.38, 0, -0.68], "rotation": [0, -82, 6] }
+      ]
+    },
+    {
+      "id": "rope-line",
+      "primitive": "cylinder",
+      "role": "taut safety rope attached to the harness and trailing downward out of frame",
+      "dimensions": [0.07, 0.07, 9],
+      "color": [0.72, 0.18, 0.06],
+      "materialPreset": "fabric",
+      "smooth": true,
+      "parentId": "climber-torso",
+      "transformSpace": "local",
+      "keyframes": [
+        { "time": 0, "location": [0.05, 0.12, -4.7], "rotation": [0, 0, 2], "easing": "EASE_IN_OUT" },
+        { "time": 4.7, "location": [-0.15, 0.12, -4.5], "rotation": [0, 5, -8], "easing": "EASE_OUT" },
+        { "time": 6, "location": [0.1, 0.12, -4.6], "rotation": [0, -3, 5], "easing": "EASE_IN_OUT" },
+        { "time": 9, "location": [0.08, 0.15, -4.4], "rotation": [0, 0, 2] },
+        { "time": 10, "location": [0.1, 0.15, -4.2], "rotation": [0, 0, 0] }
+      ]
+    },
+    {
+      "id": "broken-foothold",
+      "primitive": "cube",
+      "role": "freshly broken foothold fragment dropping away at the opening under natural gravity",
+      "dimensions": [0.7, 0.55, 0.4],
+      "color": [0.15, 0.16, 0.17],
+      "materialPreset": "matte",
+      "bevel": 0.12,
+      "keyframes": [
+        { "time": 0, "location": [0.25, -0.8, 60.8], "rotation": [0, 0, 12], "easing": "EASE_IN" },
+        { "time": 3, "location": [0.55, -2.2, 48], "rotation": [210, 120, 340] }
+      ]
+    },
+    {
+      "id": "large-falling-rock",
+      "primitive": "cone",
+      "role": "dangerous angular granite rock that falls close to the climber between three and six seconds",
+      "dimensions": [1.25, 1.0, 1.5],
+      "color": [0.13, 0.14, 0.15],
+      "materialPreset": "matte",
+      "bevel": 0.08,
+      "keyframes": [
+        { "time": 0, "location": [3.0, -1.1, 82], "rotation": [0, 0, 18], "easing": "CONSTANT" },
+        { "time": 3, "location": [3.0, -1.1, 78], "rotation": [0, 0, 18], "easing": "EASE_IN" },
+        { "time": 4.7, "location": [1.2, -2.1, 62.8], "rotation": [190, 280, 130], "easing": "EASE_IN" },
+        { "time": 6, "location": [0.4, -4.5, 36], "rotation": [410, 520, 310] }
+      ]
+    },
+    {
+      "id": "small-rock-a",
+      "primitive": "sphere",
+      "role": "small loose granite stone falling from above through the opening wide shot",
+      "dimensions": [0.32, 0.28, 0.34],
+      "color": [0.17, 0.18, 0.19],
+      "materialPreset": "matte",
+      "smooth": true,
+      "keyframes": [
+        { "time": 0, "location": [-2.8, -1.0, 76], "rotation": [0, 0, 0], "easing": "EASE_IN" },
+        { "time": 3, "location": [-2.1, -2.2, 53], "rotation": [220, 130, 90] }
+      ]
+    },
+    {
+      "id": "small-rock-b",
+      "primitive": "cone",
+      "role": "second sharp loose stone tumbling past the climber in the strong crosswind",
+      "dimensions": [0.38, 0.32, 0.45],
+      "color": [0.135, 0.15, 0.16],
+      "materialPreset": "matte",
+      "keyframes": [
+        { "time": 0, "location": [4.5, -0.8, 80], "rotation": [0, 0, 20], "easing": "EASE_IN" },
+        { "time": 4.7, "location": [3.2, -3.2, 55], "rotation": [360, 230, 440] }
+      ]
+    },
+    {
+      "id": "dust-cloud-a",
+      "primitive": "sphere",
+      "role": "semi-abstract timing proxy for a burst of granite dust blown sideways by strong wind",
+      "dimensions": [1.8, 0.5, 1.1],
+      "color": [0.28, 0.3, 0.31],
+      "materialPreset": "dust",
+      "smooth": true,
+      "keyframes": [
+        { "time": 0, "location": [-5.5, -1.7, 65], "rotation": [0, 0, 0], "easing": "EASE_OUT" },
+        { "time": 6, "location": [6.5, -3.8, 60], "rotation": [0, 0, 0] }
+      ]
+    },
+    {
+      "id": "dust-cloud-b",
+      "primitive": "sphere",
+      "role": "second wind-driven dust marker crossing the rockfall and catching sunrise light",
+      "dimensions": [1.3, 0.4, 0.8],
+      "color": [0.36, 0.3, 0.24],
+      "materialPreset": "dust",
+      "smooth": true,
+      "keyframes": [
+        { "time": 3, "location": [-2.5, -1.5, 70], "rotation": [0, 0, 0], "easing": "EASE_OUT" },
+        { "time": 9, "location": [7.5, -4.2, 64], "rotation": [0, 0, 0] }
+      ]
+    },
+    {
+      "id": "morning-sky-card",
+      "primitive": "cube",
+      "role": "distant cold blue morning sky backdrop behind the snow peaks and canyon fog",
+      "dimensions": [400, 1, 260],
+      "color": [0.16, 0.32, 0.58],
+      "materialPreset": "emissive",
+      "keyframes": [{ "time": 0, "location": [0, 155, 100], "rotation": [0, 0, 0] }]
+    },
+    {
+      "id": "sunrise-disc",
+      "primitive": "sphere",
+      "role": "low golden sunrise disc emerging between distant snow-covered peaks",
+      "dimensions": [8, 0.6, 8],
+      "color": [1.0, 0.3, 0.06],
+      "materialPreset": "emissive",
+      "smooth": true,
+      "keyframes": [{ "time": 0, "location": [-28, 152, 78], "rotation": [0, 0, 0] }]
+    },
+    {
+      "id": "snow-peak-left",
+      "primitive": "cone",
+      "role": "distant snow-covered alpine peak forming the left background depth layer",
+      "dimensions": [42, 42, 55],
+      "color": [0.58, 0.66, 0.76],
+      "materialPreset": "matte",
+      "bevel": 0.6,
+      "keyframes": [{ "time": 0, "location": [-65, 75, 58], "rotation": [0, 0, -8] }]
+    },
+    {
+      "id": "snow-peak-center",
+      "primitive": "cone",
+      "role": "enormous remote snow peak revealed behind the climber at sunrise",
+      "dimensions": [58, 58, 72],
+      "color": [0.66, 0.72, 0.8],
+      "materialPreset": "matte",
+      "bevel": 0.7,
+      "keyframes": [{ "time": 0, "location": [5, 110, 70], "rotation": [0, 0, 6] }]
+    },
+    {
+      "id": "snow-peak-right",
+      "primitive": "cone",
+      "role": "far snow-covered ridge receding into dense canyon fog on frame right",
+      "dimensions": [48, 48, 60],
+      "color": [0.46, 0.55, 0.66],
+      "materialPreset": "matte",
+      "bevel": 0.65,
+      "keyframes": [{ "time": 0, "location": [70, 92, 55], "rotation": [0, 0, 12] }]
+    }
+  ],
+  "camera": {
+    "lensMm": 24,
+    "sensorWidthMm": 36,
+    "fStop": 3.2,
+    "rig": "one continuous Hollywood survival camera move: wide aerial approach, controlled fast push to a 50mm hand detail, downward debris track with restrained motion blur, close climbing follow, then a smooth drone pull-back over the summit",
+    "easing": {
+      "location": "EASE_IN_OUT",
+      "rotation": "EASE_IN_OUT",
+      "lens": "EASE_IN_OUT"
+    },
+    "roll": { "from": -1.5, "to": 0.5 },
+    "telemetry": {},
+    "keyframes": [
+      { "time": 0, "location": [-25, -35, 70], "target": [-0.5, -0.8, 62.5], "lensMm": 24 },
+      { "time": 1.8, "location": [-12, -21, 67], "target": [-0.6, -0.9, 63], "lensMm": 28 },
+      { "time": 3, "location": [-2.1, -7.2, 63.7], "target": [-0.85, -0.8, 63.6], "lensMm": 50 },
+      { "time": 4.7, "location": [2.8, -10.5, 66.5], "target": [1.3, -1.2, 62.5], "lensMm": 38 },
+      { "time": 6, "location": [3.8, -11.8, 58], "target": [0.8, -1.8, 48], "lensMm": 32 },
+      { "time": 6.4, "location": [3.1, -9.2, 63.5], "target": [1.15, -1.1, 63], "lensMm": 50 },
+      { "time": 8.4, "location": [2.5, -10.8, 68], "target": [1.1, -0.5, 67], "lensMm": 42 },
+      { "time": 9, "location": [1.8, -13, 71.5], "target": [0.9, 1.0, 69.3], "lensMm": 35 },
+      { "time": 10, "location": [-32, -46, 88], "target": [0, 30, 72], "lensMm": 24 }
+    ]
+  },
+  "beats": [
+    { "time": 0, "label": "0-3s establishing: wide aerial, hanging climber, falling stones, upward search" },
+    { "time": 3, "label": "3-6s danger: a larger rock drops close, the climber swings sideways, and the camera tracks the falling debris" },
+    { "time": 6, "label": "6-9s recovery: the camera returns close as the climber reaches the higher hold and performs a strained natural pull" },
+    { "time": 9, "label": "9-10s victory reveal: climber kneels as camera pulls back to sunrise panorama" },
+    { "time": 10, "label": "final wide frame holds the climber small against the immense high-altitude landscape" }
+  ],
+  "seedance": {
+    "model": "seedance-2.0",
+    "resolution": "1080p",
+    "aspectRatio": "16:9",
+    "generateAudio": true,
+    "style": "Ultra-realistic National Geographic mountain documentary fused with a grounded Hollywood survival film. Photorealistic dark gray granite with sharp cracks, weathering, sparse damp moss, granular loose stones and fine airborne dust; a believable original adult climber in unbranded professional dark technical gear, helmet, gloves, rope harness and compact backpack; natural body weight, fatigue, gravity, cloth response and muscle tension; dense high-altitude canyon fog, distant snow peaks, powerful wind, golden sunrise rim light mixed with cold blue mountain shadow, physically plausible motion blur, restrained filmic contrast, detailed production sound, and premium live-action feature-film image quality rather than a videogame render.",
+    "continuity": [
+      "one original adult climber remains the only person and keeps the same dark jacket, helmet, gloves, rope harness and backpack throughout",
+      "the action remains one spatially coherent continuous ten-second event even while the camera rapidly reframes from 24mm wide to 50mm detail and back to 24mm wide",
+      "0-3 seconds establishes the climber hanging hundreds of meters above the valley with one hand on the same small edge while small stones fall and the climber searches upward",
+      "3-6 seconds features one larger falling rock passing close as the climber swings sideways with believable pendulum weight and the camera follows the debris without teleporting",
+      "6-9 seconds returns to the climber reaching the same higher ledge and completing one visibly difficult, anatomically plausible pull upward",
+      "9-10 seconds shows the climber clear the edge, kneel in exhaustion and look toward the sunrise as the camera pulls backward to reveal the immense fog-filled mountain canyon",
+      "the cliff, handholds, rockfall direction, wind direction, rope attachment and sunrise direction remain spatially consistent",
+      "golden sunlight stays on frame left while cold mountain shadow remains on the granite face"
+    ],
+    "avoid": [
+      "fantasy scenery, supernatural abilities, superhero movement or effortless climbing",
+      "cuts, camera teleportation, contradictory screen direction or impossible lens jumps",
+      "extra climbers, rescuers, duplicate bodies, extra limbs, broken anatomy or detached hands",
+      "floating rocks, low-gravity debris, rubber motion or debris moving against gravity",
+      "clean studio rock, smooth concrete, plastic surfaces, videogame appearance or oversaturated grading",
+      "retaining primitive cylinders, spheres, cones, proxy markers or flat gray-box materials",
+      "recognizable actors, branded outdoor gear, logos, readable text or copyrighted characters",
+      "bright midday weather, tropical vegetation, fantasy aurora, explosions or triumphant superhero posing"
+    ],
+    "seed": 73190426
+  }
+}
