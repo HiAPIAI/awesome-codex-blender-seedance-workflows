@@ -1,7 +1,7 @@
 {
   "name": "awesome-codex-blender-seedance-workflows",
   "version": "0.1.0",
-  "description": "Executable Codex-to-Blender previs workflows for Seedance video generation through HiAPI.",
+  "description": "Turn natural-language shot briefs into verified Blender previs and manual Seedance handoff bundles.",
   "type": "module",
   "private": true,
   "scripts": {

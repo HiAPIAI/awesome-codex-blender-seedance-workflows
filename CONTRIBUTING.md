@@ -9,8 +9,8 @@ Contributions are welcome when they improve reproducibility, safety, or the prac
 3. Keep one continuous 4-15 second shot. Use no more proxies than the blocking needs.
 4. Describe proxy roles as final cinematic subjects, not as cubes or cylinders.
 5. Add continuity locks and concrete failure exclusions.
-6. Run `npm test`, then compile into `outputs/<shot-id>` and inspect the prompt, manifest, and request.
-7. Render the full previs into that same `outputs/<shot-id>` directory and inspect first, middle, and final frames plus the complete video.
+6. Run `npm test`, then compile into `outputs/<shot-id>` and inspect the prompt and manifest.
+7. Render the full previs into that same `outputs/<shot-id>` directory and inspect first, middle, and final frames, the complete video, and `seedance-handoff.md`.
 8. Submit only text files. Do not commit generated media, `.blend` files, local paths, or secrets.
 
 ## Acceptance bar
@@ -23,6 +23,7 @@ The PR description must state:
 - Why the selected proxies and camera keys are sufficient.
 - The exact validation and render commands used.
 - The `render-report.json` and review-check result, without committing either generated file.
+- Confirmation that the handoff manifest binds the prompt, video, first frame, contact sheet, and motion trace.
 - Whether any external reference influenced the shot and whether its use is authorized.
 - That no paid generation was performed, or the task ID and human QC result if one was explicitly approved.
 
