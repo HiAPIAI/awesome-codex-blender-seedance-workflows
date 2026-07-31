@@ -28,6 +28,8 @@ const renderArtifactNames = [
   "render-report.json",
   "review-report.json",
   "review-checklist.md",
+  "handoff-manifest.json",
+  "seedance-handoff.md",
   "blocking-top.svg",
 ];
 const publishedArtifactNames = [...renderArtifactNames, "frames", "review"];
@@ -132,7 +134,7 @@ export function promoteStagedArtifacts(staging, output, shotId, options = {}) {
   recoverArtifactTransactions(absolute, shotId);
   const required = options.sceneOnly
     ? ["compiled.json", "prompt.txt", "seedance.request.json", "manifest.json", "previs.blend", "motion-trace.json", "render-report.json"]
-    : ["compiled.json", "prompt.txt", "seedance.request.json", "manifest.json", "previs.blend", "motion-trace.json", "previs.mp4", "render-report.json", "review-report.json", "review-checklist.md", "frames", "review"];
+    : ["compiled.json", "prompt.txt", "seedance.request.json", "manifest.json", "previs.blend", "motion-trace.json", "previs.mp4", "render-report.json", "review-report.json", "review-checklist.md", "handoff-manifest.json", "seedance-handoff.md", "frames", "review"];
   const missing = required.filter((name) => !fs.existsSync(path.join(staged, name)));
   if (missing.length) throw new Error(`Staged render is incomplete: missing ${missing.join(", ")}.`);
 

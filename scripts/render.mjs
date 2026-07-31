@@ -15,6 +15,7 @@ import {
 } from "./lib/artifacts.mjs";
 import { runProcess } from "./lib/process.mjs";
 import { createReviewArtifacts } from "./lib/review.mjs";
+import { createSeedanceHandoff } from "./lib/handoff.mjs";
 import { sha256File, writeJson } from "./lib/io.mjs";
 import { readAndValidateMotionTrace } from "./lib/motion-trace.mjs";
 import { compileShotSpec, loadShotSpec } from "./lib/spec.mjs";
@@ -115,6 +116,13 @@ async function main() {
         includeBlockingSvg: Boolean(options["blocking-svg"]),
       });
       publishFileAtomically(encoded.temporary, encoded.destination);
+      createSeedanceHandoff({
+        output: runOutput,
+        compiled: result.compiled,
+        request: result.request,
+        video: encoded.video,
+        motionTrace,
+      });
       writeJson(path.join(runOutput, "render-report.json"), {
         ...blenderReport,
         status: "complete",
@@ -134,6 +142,8 @@ async function main() {
           "review/",
           "review-report.json",
           "review-checklist.md",
+          "handoff-manifest.json",
+          "seedance-handoff.md",
         ],
       });
     } finally {
