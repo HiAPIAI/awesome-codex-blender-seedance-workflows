@@ -2,7 +2,7 @@
 
 ## Product position
 
-Provide the smallest trustworthy bridge between Codex, Blender previs, and Seedance generation. The repository should be useful without a custom GUI and complementary to Blender MCP and Blockout rather than a clone of either.
+Provide the smallest trustworthy bridge from a natural-language shot brief to Blender previs and a manual Seedance handoff. The repository should be useful without a custom GUI and complementary to Blender MCP and Blockout rather than a clone of either.
 
 ## P0 - executable foundation (completed)
 
@@ -25,13 +25,18 @@ Provide the smallest trustworthy bridge between Codex, Blender previs, and Seeda
 - [x] Preserve the previous render through isolated staging and recoverable promotion.
 - [x] Bind paid submission to the reviewed request/video hashes and completed human-review flag.
 - [x] Bind recovery to the exact API credential and bound the idempotency window, API responses, media uploads, and all-address DNS-pinned MP4 downloads.
+- [x] Record and validate evaluated per-frame camera, lens, target, and proxy transforms from Blender.
 
-## P2 - authoring adapters
+## P2 - focused authoring and handoff
 
+- [x] Add a root skill contract that tells Codex to translate natural-language briefs directly into `shot.json` instead of requiring hand-authored JSON or a brittle keyword parser.
+- [x] Make plane-first blocking, minimal proxy geometry, one dominant camera move, and two-key defaults explicit.
+- [x] Generate `seedance-handoff.md` and `handoff-manifest.json` automatically after every verified render.
+- [x] Make manual Seedance upload the default completion path and demote API submission to an explicitly requested, provider-verified option.
 - Add a cached Blender 4.5 LTS/current 5.x headless render matrix when CI download/runtime budget is available; local release verification remains required until then.
-- Import a constrained subset of Blockout metadata into `shot.json`.
-- Add a Blender MCP handoff prompt that exports only schema-approved state.
-- Add GLB/FBX proxy import after a license and sandbox boundary review.
+- Add a rights-cleared start-image handoff only after the production Seedance request contract and paid preflight binding are verified end to end.
+
+Blockout, Blender MCP, and GLB/FBX import remain external authoring options, not planned core layers. Add an adapter only when a concrete shot cannot be expressed safely with the existing primitive schema.
 
 ## P3 - community scale
 
@@ -42,6 +47,7 @@ Provide the smallest trustworthy bridge between Codex, Blender previs, and Seeda
 ## Success criteria
 
 - A new contributor can render an example in under ten minutes after dependencies are installed.
+- A user can give Codex a plain-language shot brief and receive a complete manual Seedance upload package without learning the JSON schema.
 - A changed request or video cannot reuse an old paid confirmation token.
 - Every merged workflow is reproducible from committed text files.
 - No secret, signed media URL, local absolute path, generated video, or third-party unlicensed asset enters Git.

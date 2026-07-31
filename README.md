@@ -4,18 +4,17 @@
 
 [简体中文](README.zh-CN.md) | [Setup](docs/setup.md) | [Architecture](docs/architecture.md) | [Research](docs/research.md) | [Roadmap](docs/PLAN.md)
 
-Executable, reviewable workflows for turning a Codex-authored shot plan into a Blender gray-box previs and then into a Seedance 2.0 video through [HiAPI](https://www.hiapi.ai/).
+Executable, reviewable workflows for turning a natural-language shot brief into a Blender gray-box previs and a complete manual Seedance 2.0 handoff bundle.
 
-This is not another prompt gallery. Every included workflow has a versioned JSON shot contract, deterministic compilation, a real Blender batch render, a dry-run-first HiAPI request, and tests.
+This is not another prompt gallery. Codex translates the brief into a versioned JSON shot contract, Blender verifies the blocking and camera, and the renderer packages the motion reference, generated prompt, review stills, and trace for the user to upload to Seedance.
 
 ```mermaid
 flowchart LR
-  A["Codex edits shot.json"] --> B["Validate and compile"]
-  B --> C["Blender renders gray-box previs"]
-  C --> R["Verify media and build review artifacts"]
-  R --> D["Human reviews motion and camera"]
-  D --> E["HiAPI preflight token"]
-  E --> F["Seedance 2.0 generation"]
+  A["Natural-language shot brief"] --> B["Codex authors shot.json"]
+  B --> C["Plane-first blocking"]
+  C --> D["Blender verifies motion and camera"]
+  D --> E["Handoff bundle: previs + prompt + trace"]
+  E --> F["User uploads to Seedance 2.0"]
   F --> G["Human continuity review"]
 ```
 
@@ -30,6 +29,20 @@ flowchart LR
 
 The engine supports white-listed cubes, spheres, cylinders, cones, object transforms, camera transforms, focal-length changes, and linear keyframes. Optional cinematic specs can select bounded Cycles samples, material presets, bevels, smooth shading, depth of field, volumetric density, and up to 16 validated lights. It deliberately does not execute arbitrary model-authored Python.
 
+## Authoring method
+
+Adapted from [Reid Hannaford's Blender-to-Seedance process](https://x.com/reidhannaford/status/2071595581508563168): lock the first-frame composition with a precise frame brief or reviewed 2D frame, establish the ground plane and screen direction, then use Blender to solve only blocking, timing, occlusion, and camera motion. Seedance supplies production appearance; the previs is not a modeling portfolio.
+
+| Build in Blender | Skip unless it changes the shot |
+|---|---|
+| Silhouette and approximate volume | Final topology and subdivision |
+| Relative scale and ground contact | Faces, fingers, and costume detail |
+| Paths, spacing, overlap, and occlusion | Micro-textures and hidden surfaces |
+| Camera height, lens, target, and horizon | Decorative geometry outside frame |
+| Distinct action and camera beats | Extra keyframes between clear beats |
+
+Match frame 1 to the approved frame brief, animate with the fewest readable keys, and change only one class of variable per iteration: blocking, timing, or camera. Review the complete MP4 and use `motion-trace.json` for exact evaluated transforms. A 2D start frame is optional authoring evidence, not a prerequisite or an automatically submitted input.
+
 ## Quick start
 
 Requirements: Node.js 20+, Blender 4.5+, and FFmpeg with `ffprobe` and `libx264`. This repository was verified on Windows with Node 22.22.3, Blender 5.2.0 LTS, and FFmpeg 8.1.2.
@@ -42,36 +55,39 @@ npm run compile -- examples/warehouse-pursuit/shot.json --out-dir outputs/wareho
 npm run render -- examples/warehouse-pursuit/shot.json --out-dir outputs/warehouse-pursuit
 ```
 
-Inspect `outputs/warehouse-pursuit/prompt.txt`, `manifest.json`, and `seedance.request.json`, then open `outputs/warehouse-pursuit/review/contact-sheet.png`, follow `outputs/warehouse-pursuit/review-checklist.md`, and watch `outputs/warehouse-pursuit/previs.mp4` from beginning to end. The proxies need to communicate the intended screen direction, timing, spacing, and camera path; they are not a visual target.
+Inspect `outputs/warehouse-pursuit/prompt.txt` and `seedance-handoff.md`, then open `outputs/warehouse-pursuit/review/contact-sheet.png`, follow `outputs/warehouse-pursuit/review-checklist.md`, and watch `outputs/warehouse-pursuit/previs.mp4` from beginning to end. The proxies need to communicate the intended screen direction, timing, spacing, and camera path; they are not a visual target.
 
 Add `--blocking-svg` to the render command when a top-down object/camera-path diagram would help review spatial choreography.
 
-Dry-run the Seedance package from that same canonical output directory:
+The default handoff is manual: upload `previs.mp4` as the primary motion reference and paste `prompt.txt` into Seedance 2.0. `seedance-handoff.md` records the exact upload order and settings; `handoff-manifest.json` binds the file roles, byte counts, hashes, and evaluated camera summary.
+
+## Optional API submission
+
+Only use API submission when the user explicitly requests it and the active provider has been verified to forward reference video inputs end to end. Start with a free dry run:
 
 ```powershell
 npm run generate -- --request outputs/warehouse-pursuit/seedance.request.json --video outputs/warehouse-pursuit/previs.mp4 --out-dir outputs/warehouse-pursuit/hiapi
 ```
 
-The last command is a dry run. It prints the full API endpoint, a payload summary, and a SHA-256 `preflightToken`, but it does not read the API key or create a task. The token binds the endpoint, request, and video. Before a paid request, watch the complete previs, finish `review-checklist.md`, resolve every automatic flag, and change `humanReviewComplete` from `false` to `true` in the matching `review-report.json`. The paid command rejects a report whose request hash or video SHA-256 does not match. It then requires the exact token from the current dry run:
+The command prints a SHA-256 `preflightToken` but does not create a task. A paid request requires completed human review and the exact current token:
 
 ```powershell
 npm run generate -- --request outputs/warehouse-pursuit/seedance.request.json --video outputs/warehouse-pursuit/previs.mp4 --out-dir outputs/warehouse-pursuit/hiapi --confirm-preflight <token>
 ```
 
-The paid POST sends that token as `Idempotency-Key` and canonical JSON bytes. Before the request leaves the machine, the CLI writes `hiapi/preflight-<token>.pending.json` with an immutable first-attempt time and a salted one-way binding to the exact API key; it never stores the key. After it receives a valid task ID, it writes `<task-id>.submitted.json` and removes the pending journal. If the connection is lost during submission, keep the journal and retry only with the same key, unchanged inputs, and token, and only inside the journal's 23-hour safe window. A definitive client rejection clears pending state, while ambiguous status codes and transport failures keep it for reconciliation. Once the window expires, the CLI refuses to resubmit because server idempotency may have expired. Local reference videos are capped at 90 MiB so base64 stays below the API request-body limit. Completed MP4 downloads resolve and validate every address per redirect, pin that address set without re-resolving, fall back across reachable addresses inside one deadline, stream to a temporary file, enforce response/type/size/container bounds, publish with atomic no-clobber semantics, and record `<task-id>.download.json` with bytes and SHA-256.
-
-[Create a HiAPI account](https://www.hiapi.ai/en/register), then create and manage an API key in the [HiAPI dashboard](https://www.hiapi.ai/en/dashboard/api-keys). Put it in the process environment as `HIAPI_API_KEY`; never put it in chat, source, a command argument, or Git. See [setup](docs/setup.md) for safe per-session examples.
+The token also acts as the idempotency key. Ambiguous submission failures keep a local journal for same-input recovery; validated downloads are published atomically. See [architecture](docs/architecture.md) for the complete trust boundary and [setup](docs/setup.md) for credential handling.
 
 ## Use with Codex
 
-Open this repository in Codex and give it a constrained shot brief:
+Open this repository in Codex and give it a natural-language shot brief; Codex writes the structured spec:
 
 ```text
-Read AGENTS.md. Copy the closest example into examples/subway-platform-reveal.
+Use $awesome-codex-blender-seedance-workflows and read AGENTS.md.
+Copy the closest example into examples/subway-platform-reveal.
 Create one continuous 7-second shot: a commuter notices an empty train arriving,
 then the camera dollies sideways to reveal every carriage is dark. Keep screen
 direction stable, use no more than six proxies, validate, compile, and render the
-previs. Do not submit a paid HiAPI task.
+previs and manual Seedance handoff bundle. Do not submit a paid API task.
 ```
 
 `AGENTS.md` makes the review gates explicit. Blender MCP or [Blockout](https://github.com/wassermanproductions/blockout) can still be used for interactive exploration, but the final contribution must reduce to `shot.json` so it remains diffable and reproducible.
@@ -85,10 +101,13 @@ outputs/<shot-id>/
 |-- prompt.txt
 |-- seedance.request.json
 |-- previs.blend
+|-- motion-trace.json
 |-- previs.mp4
 |-- render-report.json
 |-- review-report.json
 |-- review-checklist.md
+|-- handoff-manifest.json
+|-- seedance-handoff.md
 |-- frames/
 |   `-- frame_####.png
 |-- review/
@@ -97,23 +116,23 @@ outputs/<shot-id>/
 |   |-- last-frame.png
 |   |-- contact-sheet.png
 |   `-- blocking-top.svg  # only with --blocking-svg
-`-- hiapi/                # only after a confirmed task
+`-- hiapi/                # optional, only after a confirmed API task
 ```
 
-The compiler and renderer claim an empty output directory with a shot-specific marker and hold an exclusive lock while writing; they refuse non-empty unowned directories, concurrent writers, and reuse by another shot. A render is built and verified in an isolated staging directory, so Blender, encoding, or review failure leaves the previous published render intact. Promotion uses a recoverable backup transaction, and a later run repairs an interrupted promotion before starting. The renderer requires an exact contiguous PNG sequence, encodes to a temporary MP4, and uses FFprobe to verify H.264/yuv420p, dimensions, frame rate, and frame count before publication. `review-report.json` records the verified media facts plus automatic blank-frame and abrupt-luma-change flags. Those flags are triage aids, not a creative pass. Generated media, reports, task journals, staging data, and `.blend` files are ignored by Git even under a custom output directory; the manifest stores content hashes without embedding API keys or machine-specific paths.
+The compiler and renderer claim an empty output directory with a shot-specific marker and hold an exclusive lock while writing; they refuse non-empty unowned directories, concurrent writers, and reuse by another shot. A render is built and verified in an isolated staging directory, so Blender, encoding, or review failure leaves the previous published render intact. Promotion uses a recoverable backup transaction, and a later run repairs an interrupted promotion before starting. Blender writes `motion-trace.json` from its evaluated dependency graph: every rendered frame records the actual camera location, target, forward/up vectors, focal length, horizontal field of view, and each proxy transform after interpolation and constraints. The Node wrapper rejects missing frames, timeline drift, malformed vectors, or object-set drift before publication. The renderer requires an exact contiguous PNG sequence, encodes to a temporary MP4, and uses FFprobe to verify H.264/yuv420p, dimensions, frame rate, and frame count before publication. `review-report.json` records the verified media facts plus automatic blank-frame and abrupt-luma-change flags. Those flags are triage aids, not a creative pass. Generated media, reports, task journals, staging data, and `.blend` files are ignored by Git even under a custom output directory; the manifest stores content hashes without embedding API keys or machine-specific paths.
 
 ## Design decisions
 
 - **Previs is a control signal.** The compiled prompt tells Seedance to preserve blocking, timing, lens rhythm, and camera path while replacing every proxy surface.
 - **One shot per spec.** Seedance references are strongest when a 4-15 second clip has one spatial and temporal contract.
-- **No hidden paid action.** Submission is dry-run first; the confirmation token changes if the endpoint, request, or local video changes.
-- **Recoverable paid handoff.** The preflight token is also the server idempotency key, and a local pending journal exists before the POST.
+- **Manual handoff is the default.** Every verified render includes the video, prompt, review artifacts, hashes, camera facts, and upload instructions.
+- **No hidden paid action.** Optional API submission remains dry-run first and requires provider capability verification.
 - **No arbitrary Blender code.** Schema validation and white-listed primitives keep Codex output auditable.
 - **Interactive tools remain optional.** Blender MCP and Blockout are excellent authoring surfaces; this project is the lightweight, Git-native handoff layer.
 
 ## Human review checklist
 
-Before paid generation: inspect the generated stills and contact sheet, resolve every automatic flag in `review-report.json`, then watch the whole previs and complete `review-checklist.md`. Confirm performer spacing, screen direction, contacts, camera speed, and requested duration. Do not change `humanReviewComplete` until a person has watched the complete video.
+Before handoff: inspect the generated stills and contact sheet, resolve every automatic flag in `review-report.json`, then watch the whole previs and complete `review-checklist.md`. Confirm performer spacing, screen direction, contacts, camera speed, and requested duration. Do not change `humanReviewComplete` until a person has watched the complete video.
 
 After generation: review the whole clip for subject identity, limb/contact integrity, camera adherence, object count, continuity locks, unwanted proxy leakage, unsafe likeness/IP use, and audio sync. API `success` means generation completed; it does not mean the shot passed creative QC.
 

@@ -1,15 +1,15 @@
 # Awesome Codex + Blender + Seedance Workflows
 
-> A zero-runtime-dependency, executable repository for compiling structured Codex shot plans into Blender gray-box previs videos and reviewed Seedance 2.0 requests through HiAPI.
+> A zero-runtime-dependency, executable skill for turning natural-language shot briefs into Blender gray-box previs videos and complete manual Seedance 2.0 handoff bundles.
 
 ## Start here
 
 - Read `/AGENTS.md` before editing a shot.
-- Copy one `/examples/*/shot.json` file into a new example directory.
+- Translate the user's natural-language brief into a copy of the closest `/examples/*/shot.json`; do not require the user to write JSON.
 - Use `outputs/<shot-id>` as the canonical directory for both compile and render artifacts.
 - Run `npm test`, `npm run compile -- <shot.json> --out-dir outputs/<shot-id>`, then `npm run render -- <shot.json> --out-dir outputs/<shot-id>`.
-- Inspect `review/contact-sheet.png` and `review-report.json`, then review the complete previs, finish `review-checklist.md`, and set the matching report's `humanReviewComplete` to true before paid submission.
-- Never submit a paid task without the exact current endpoint-bound preflight token and user approval.
+- Inspect `review/contact-sheet.png` and `review-report.json`, review the complete previs, then deliver `previs.mp4`, `prompt.txt`, and `seedance-handoff.md` for manual Seedance generation.
+- Treat API submission as optional. Never submit a paid task without provider capability verification, the exact current endpoint-bound preflight token, and user approval.
 - Preserve a `preflight-<token>.pending.json` journal after an ambiguous POST failure; retry the same API credential and unchanged inputs only inside its 23-hour safe window, then reconcile task history and billing instead of resubmitting.
 
 ## Important files
@@ -18,6 +18,7 @@
 - `/scripts/lib/spec.mjs`: validation and compilation.
 - `/scripts/blender/render_previs.py`: constrained Blender renderer.
 - `/scripts/lib/review.mjs`: verified stills, contact sheet, signal checks, optional blocking SVG, and human checklist.
-- `/scripts/submit.mjs`: dry-run, idempotent submit, recovery journal, poll, resume, and validated download lifecycle.
+- `/scripts/lib/handoff.mjs`: manual upload guide and hash-bound handoff manifest.
+- `/scripts/submit.mjs`: optional dry-run, idempotent submit, recovery journal, poll, resume, and validated download lifecycle.
 - `/docs/PLAN.md`: current and future scope.
 - `/docs/research.md`: related projects and non-copying boundary.

@@ -9,8 +9,11 @@ manifest.json
 prompt.txt
 seedance.request.json
 render-report.json
+motion-trace.json
 review-report.json
 review-checklist.md
+handoff-manifest.json
+seedance-handoff.md
 blocking-top.svg
 preflight-*.pending.json
 *.submitted.json
