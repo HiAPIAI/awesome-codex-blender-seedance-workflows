@@ -370,7 +370,7 @@ def create_camera_from_spec_track(camera_spec):
         camera_data.keyframe_insert(data_path="lens", frame=frame)
         if use_dof and sample.get("focusDistance"):
             camera_data.dof.focus_distance = sample["focusDistance"]
-            camera_data.dof.keyframe_insert(data_path="dof.focus_distance", frame=frame)
+            camera_data.dof.keyframe_insert(data_path="focus_distance", frame=frame)
     bpy.context.scene.camera = camera
     return camera, None
 
