@@ -1,0 +1,4 @@
+interface:
+  display_name: "Blender + Seedance Previs"
+  short_description: "Turn shot briefs into Blender previs handoff bundles"
+  default_prompt: "Use $awesome-codex-blender-seedance-workflows to turn my shot brief into a minimal Blender previs and manual Seedance handoff bundle."

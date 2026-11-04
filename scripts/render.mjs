@@ -15,7 +15,9 @@ import {
 } from "./lib/artifacts.mjs";
 import { runProcess } from "./lib/process.mjs";
 import { createReviewArtifacts } from "./lib/review.mjs";
+import { createSeedanceHandoff } from "./lib/handoff.mjs";
 import { sha256File, writeJson } from "./lib/io.mjs";
+import { readAndValidateMotionTrace } from "./lib/motion-trace.mjs";
 import { compileShotSpec, loadShotSpec } from "./lib/spec.mjs";
 
 const booleanOptions = new Set(["dry-run", "scene-only", "blocking-svg"]);
@@ -87,7 +89,13 @@ async function main() {
     writeCompiledArtifacts({ output: runOutput, sourceFile: file, result });
     await runProcess(blender, blenderArgs, "Blender");
     const blenderReport = readBlenderReport(runOutput, result.compiled, sceneOnly);
+    const motionTrace = readAndValidateMotionTrace(runOutput, result.compiled);
     if (sceneOnly) {
+      writeJson(path.join(runOutput, "render-report.json"), {
+        ...blenderReport,
+        motionTrace,
+        files: ["previs.blend", "motion-trace.json"],
+      });
       promoteStagedArtifacts(runOutput, output, spec.id, { sceneOnly: true });
       console.log(`Built Blender scene ${spec.id} in ${output}`);
       return;
@@ -104,9 +112,17 @@ async function main() {
         sequence,
         video: encoded.video,
         hashes: result.hashes,
+        motionTrace,
         includeBlockingSvg: Boolean(options["blocking-svg"]),
       });
       publishFileAtomically(encoded.temporary, encoded.destination);
+      createSeedanceHandoff({
+        output: runOutput,
+        compiled: result.compiled,
+        request: result.request,
+        video: encoded.video,
+        motionTrace,
+      });
       writeJson(path.join(runOutput, "render-report.json"), {
         ...blenderReport,
         status: "complete",
@@ -115,15 +131,19 @@ async function main() {
         requestHash: result.hashes.request,
         encoded: true,
         video: encoded.video,
+        motionTrace,
         automaticReview: review.automaticChecks.status,
         humanReviewComplete: false,
         files: [
           "previs.blend",
+          "motion-trace.json",
           "previs.mp4",
           "frames/",
           "review/",
           "review-report.json",
           "review-checklist.md",
+          "handoff-manifest.json",
+          "seedance-handoff.md",
         ],
       });
     } finally {
